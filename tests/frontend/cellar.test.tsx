@@ -29,6 +29,8 @@ const wine: Wine = {
     type: 'red',
     country: 'Italien',
     region: null,
+    ean: '8001234567897',
+    systembolaget_number: '7424201',
     alcohol: 14,
     body: 'full',
     notes: null,

@@ -14,7 +14,7 @@ class Wine extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'producer', 'vintage', 'type', 'country', 'region', 'alcohol', 'body', 'notes'];
+    protected $fillable = ['name', 'producer', 'vintage', 'type', 'country', 'region', 'ean', 'systembolaget_number', 'alcohol', 'body', 'notes'];
 
     protected $hidden = ['label_path'];
 

@@ -38,6 +38,8 @@ export default function WineShow({ wine, racks }: { wine: Wine; racks: Rack[] })
                             ['Region', wine.region],
                             ['Årgång', wine.vintage ?? 'NV'],
                             ['Druvor', wine.grapes.map((g) => g.name).join(', ')],
+                            ['EAN', wine.ean],
+                            ['Systembolagets artikelnummer', wine.systembolaget_number],
                             ['Fyllighet', wine.body ? wineBodies[wine.body] : null],
                             ['Alkohol', wine.alcohol != null ? wine.alcohol + ' %' : null],
                             ['Flaskor hemma', available.length],

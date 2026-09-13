@@ -28,7 +28,7 @@ class WineController extends Controller
         if ($request->filled('q')) {
             $term = '%'.mb_substr($request->string('q')->toString(), 0, 255).'%';
             $query->where(function ($q) use ($term) {
-                foreach (['name', 'producer', 'country', 'region'] as $field) {
+                foreach (['name', 'producer', 'country', 'region', 'ean', 'systembolaget_number'] as $field) {
                     $q->orWhere($field, 'like', $term);
                 }
                 $q->orWhereHas('grapes', fn ($g) => $g->where('name', 'like', $term));

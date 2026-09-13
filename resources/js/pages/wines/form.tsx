@@ -16,6 +16,8 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
         type: wine?.type ?? ('' as WineType | ''),
         country: wine?.country ?? '',
         region: wine?.region ?? '',
+        ean: wine?.ean ?? '',
+        systembolaget_number: wine?.systembolaget_number ?? '',
         alcohol: wine?.alcohol?.toString() ?? '',
         body: wine?.body ?? ('' as WineBody | ''),
         notes: wine?.notes ?? '',
@@ -134,6 +136,26 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
                             </Field>
                             <Field label="Region">
                                 <Input value={form.data.region} onChange={(e) => form.setData('region', e.target.value)} />
+                            </Field>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <Field label="EAN" error={form.errors.ean}>
+                                <Input
+                                    inputMode="numeric"
+                                    maxLength={13}
+                                    value={form.data.ean}
+                                    onChange={(e) => form.setData('ean', e.target.value)}
+                                    placeholder="8 eller 13 siffror"
+                                />
+                            </Field>
+                            <Field label="Systembolagets artikelnummer" error={form.errors.systembolaget_number}>
+                                <Input
+                                    inputMode="numeric"
+                                    maxLength={20}
+                                    value={form.data.systembolaget_number}
+                                    onChange={(e) => form.setData('systembolaget_number', e.target.value)}
+                                    placeholder="Till exempel 7424201"
+                                />
                             </Field>
                         </div>
                         <Field label="Druvor, separerade med kommatecken">

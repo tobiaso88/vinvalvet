@@ -20,12 +20,18 @@ function winePayload(array $changes = []): array
     return array_merge(['name' => 'Barolo', 'type' => 'red', 'vintage' => 2020, 'grapes' => ['Nebbiolo'], 'quantity' => 2, 'positions' => []], $changes);
 }
 
-it('creates wine grapes and positioned bottles with immutable event locations', function () {
+it('creates wine metadata grapes and positioned bottles with immutable event locations', function () {
     $user = User::factory()->create();
     $rack = WineRack::factory()->for($user)->create(['name' => 'Källaren']);
-    $this->actingAs($user)->post('/wines', winePayload(['positions' => [['wine_rack_id' => $rack->id, 'row' => 1, 'column' => 2]]]))->assertSessionHasNoErrors()->assertRedirect();
+    $this->actingAs($user)->post('/wines', winePayload([
+        'ean' => '8001234567897',
+        'systembolaget_number' => '07424201',
+        'positions' => [['wine_rack_id' => $rack->id, 'row' => 1, 'column' => 2]],
+    ]))->assertSessionHasNoErrors()->assertRedirect();
     $wine = $user->wines()->firstOrFail();
     expect($wine->type)->toBe(WineType::Red);
+    expect($wine->ean)->toBe('8001234567897');
+    expect($wine->systembolaget_number)->toBe('07424201');
     expect($wine->grapes->pluck('name')->all())->toBe(['Nebbiolo']);
     expect($wine->bottles()->count())->toBe(2);
     $this->assertDatabaseHas('bottles', ['wine_id' => $wine->id, 'row' => 1, 'column' => 2, 'wine_rack_id' => $rack->id]);
@@ -142,12 +148,16 @@ it('searches grapes and filters stock without leaking other accounts', function 
     Wine::factory()->for($user)->create(['name' => 'Empty wine']);
     Wine::factory()->create(['name' => 'Other private wine']);
     $this->actingAs($user)->get('/wines?q=Nebbiolo&type=red&vintage=2020')->assertInertia(fn (Assert $page) => $page->component('wines/index')->has('wines.data', 1)->where('wines.data.0.id', $wine->id));
+    $wine->update(['ean' => '8001234567897', 'systembolaget_number' => '7424201']);
+    $this->get('/wines?q=8001234567897')->assertInertia(fn (Assert $page) => $page->has('wines.data', 1)->where('wines.data.0.id', $wine->id));
+    $this->get('/wines?q=7424201')->assertInertia(fn (Assert $page) => $page->has('wines.data', 1)->where('wines.data.0.id', $wine->id));
     $this->get('/wines?stock=empty')->assertInertia(fn (Assert $page) => $page->has('wines.data', 1)->where('wines.data.0.name', 'Empty wine'));
 });
 
 it('validates domain values and ignores owner injection', function () {
     $user = User::factory()->create();
     $this->actingAs($user)->post('/wines', winePayload(['type' => 'beer', 'body' => 'massive', 'vintage' => 1700, 'alcohol' => 99]))->assertSessionHasErrors(['type', 'body', 'vintage', 'alcohol']);
+    $this->post('/wines', winePayload(['ean' => '1234', 'systembolaget_number' => 'SB-123']))->assertSessionHasErrors(['ean', 'systembolaget_number']);
     $this->post('/wines', winePayload(['user_id' => 999, 'quantity' => 0]))->assertSessionHasNoErrors();
     $this->assertDatabaseHas('wines', ['user_id' => $user->id]);
 });

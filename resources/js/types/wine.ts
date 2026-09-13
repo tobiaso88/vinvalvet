@@ -10,6 +10,8 @@ export interface Wine {
     type: WineType;
     country: string | null;
     region: string | null;
+    ean: string | null;
+    systembolaget_number: string | null;
     alcohol: number | null;
     body: WineBody | null;
     notes: string | null;

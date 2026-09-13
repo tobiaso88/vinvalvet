@@ -27,6 +27,8 @@ class WineRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'], 'producer' => ['nullable', 'string', 'max:255'],
             'vintage' => ['nullable', 'integer', 'between:1800,'.date('Y')], 'type' => ['required', Rule::enum(WineType::class)],
             'country' => ['nullable', 'string', 'max:255'], 'region' => ['nullable', 'string', 'max:255'],
+            'ean' => ['nullable', 'string', 'regex:/^(?:\d{8}|\d{13})$/'],
+            'systembolaget_number' => ['nullable', 'string', 'max:20', 'regex:/^\d+$/'],
             'alcohol' => ['nullable', 'numeric', 'between:0,30'], 'body' => ['nullable', Rule::enum(WineBody::class)],
             'notes' => ['nullable', 'string', 'max:5000'], 'grapes' => ['present', 'array', 'max:20'],
             'grapes.*' => ['required', 'string', 'max:100', 'distinct:ignore_case'],
