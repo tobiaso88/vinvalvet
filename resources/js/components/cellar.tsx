@@ -67,7 +67,7 @@ export function WineCard({ wine }: { wine: Wine }) {
         >
             <div className="bg-muted/60 flex w-24 shrink-0 items-center justify-center p-3 sm:w-28">
                 {wine.label_url ? (
-                    <img src={wine.label_url} alt={'Etikett för ' + wine.name} className="h-32 w-full rounded object-contain" loading="lazy" />
+                    <img src={wine.label_url} alt={'Flaskbild för ' + wine.name} className="h-32 w-full rounded object-contain" loading="lazy" />
                 ) : (
                     <WineIcon className="h-24 w-12 stroke-[1]" style={{ color: typeColors[wine.type] }} />
                 )}

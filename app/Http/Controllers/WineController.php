@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\BottleStatus;
 use App\Http\Requests\WineRequest;
+use App\Jobs\EnhanceBottleImage;
 use App\Models\Grape;
 use App\Models\Wine;
 use App\Services\InventoryService;
@@ -80,7 +81,11 @@ class WineController extends Controller
             throw $exception;
         }
 
-        return to_route('wines.show', $wine)->with('success', 'Vinet har lagts till i din samling.');
+        if ($path) {
+            $this->enhanceImage($wine, $path);
+        }
+
+        return to_route('wines.show', $wine)->with('success', 'Vinet har lagts till i din samling.'.($path ? ' Bilden förbättras i bakgrunden.' : ''));
     }
 
     public function show(Wine $wine, Request $request): Response
@@ -125,7 +130,11 @@ class WineController extends Controller
             Storage::disk('local')->delete($oldPath);
         }
 
-        return to_route('wines.show', $wine)->with('success', 'Vinuppgifterna har sparats.');
+        if ($path) {
+            $this->enhanceImage($wine, $path);
+        }
+
+        return to_route('wines.show', $wine)->with('success', 'Vinuppgifterna har sparats.'.($path ? ' Bilden förbättras i bakgrunden.' : ''));
     }
 
     public function destroy(Wine $wine, InventoryService $inventory): RedirectResponse
@@ -151,6 +160,15 @@ class WineController extends Controller
         abort_unless($wine->label_path && Storage::disk('local')->exists($wine->label_path), 404);
 
         return Storage::disk('local')->response($wine->label_path, null, ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+    }
+
+    private function enhanceImage(Wine $wine, string $path): void
+    {
+        try {
+            EnhanceBottleImage::dispatch($wine->id, $path);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 
     private function syncGrapes(Wine $wine, array $names): void

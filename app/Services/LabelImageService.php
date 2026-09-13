@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class LabelImageService
 {
-    public function encode(UploadedFile $file): string
+    public function encode(UploadedFile $file, bool $preserveAlpha = false): string
     {
         $size = getimagesize($file->getPathname());
         if (! $size || $size[0] * $size[1] > 24000000) {
@@ -35,18 +35,40 @@ class LabelImageService
         $height = imagesy($image);
         $scale = min(1, 2048 / max($width, $height));
         $resized = imagecreatetruecolor(max(1, (int) ($width * $scale)), max(1, (int) ($height * $scale)));
-        imagefill($resized, 0, 0, imagecolorallocate($resized, 255, 255, 255));
+        if ($preserveAlpha) {
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+        }
+        imagefill($resized, 0, 0, imagecolorallocatealpha($resized, 255, 255, 255, $preserveAlpha ? 127 : 0));
         imagecopyresampled($resized, $image, 0, 0, 0, 0, imagesx($resized), imagesy($resized), $width, $height);
         ob_start();
-        imagejpeg($resized, null, 85);
+        if ($preserveAlpha) {
+            imagepng($resized);
+        } else {
+            imagejpeg($resized, null, 85);
+        }
 
         return (string) ob_get_clean();
     }
 
     public function store(UploadedFile $file, int $userId): string
     {
-        $path = 'labels/'.$userId.'/'.Str::uuid().'.jpg';
-        Storage::disk('local')->put($path, $this->encode($file));
+        $preserveAlpha = $file->getMimeType() === 'image/png';
+        if ($preserveAlpha) {
+            $this->encode($file);
+            $image = imagecreatefromstring($file->getContent());
+            $preserveAlpha = false;
+            for ($y = 0; $y < imagesy($image) && ! $preserveAlpha; $y++) {
+                for ($x = 0; $x < imagesx($image); $x++) {
+                    if (imagecolorsforindex($image, imagecolorat($image, $x, $y))['alpha'] > 0) {
+                        $preserveAlpha = true;
+                        break;
+                    }
+                }
+            }
+        }
+        $path = 'labels/'.$userId.'/'.Str::uuid().($preserveAlpha ? '.png' : '.jpg');
+        Storage::disk('local')->put($path, $this->encode($file, $preserveAlpha));
 
         return $path;
     }

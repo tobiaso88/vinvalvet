@@ -29,6 +29,13 @@ return [
     */
 
     'connections' => [
+        'bottle-images' => [
+            'driver' => 'database',
+            'table' => 'jobs',
+            'queue' => 'bottle-images',
+            'retry_after' => 180,
+            'after_commit' => true,
+        ],
 
         'sync' => [
             'driver' => 'sync',

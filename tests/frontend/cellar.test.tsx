@@ -45,6 +45,15 @@ const rack: Rack = {
 };
 
 describe('cellar interactions', () => {
+    it('keeps saving available and sends no enhancement request on image selection', () => {
+        const mock = vi.spyOn(globalThis, 'fetch');
+        render(<WineForm wine={null} racks={[]} />);
+        fireEvent.change(screen.getByLabelText('Flaskbild'), { target: { files: [new File(['photo'], 'photo.jpg', { type: 'image/jpeg' })] } });
+        expect(mock).not.toHaveBeenCalled();
+        expect(screen.getByRole('button', { name: 'Spara vin och flaskor' })).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Läs etiketten' })).toBeEnabled();
+        mock.mockRestore();
+    });
     it('renders coordinates and distinguishes occupied empty and selected slots', () => {
         const select = vi.fn();
         render(<RackGrid rack={rack} onSelect={select} selected={[{ wine_rack_id: 1, row: 2, column: 2 }]} />);
@@ -81,7 +90,7 @@ describe('cellar interactions', () => {
         };
         const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => result } as Response);
         render(<WineForm wine={null} racks={[]} />);
-        fireEvent.change(screen.getByLabelText('Etikettbild'), { target: { files: [new File(['photo'], 'label.jpg', { type: 'image/jpeg' })] } });
+        fireEvent.change(screen.getByLabelText('Flaskbild'), { target: { files: [new File(['photo'], 'label.jpg', { type: 'image/jpeg' })] } });
         fireEvent.click(screen.getByRole('button', { name: 'Läs etiketten' }));
         await waitFor(() => expect(screen.getByLabelText('Vinets namn *')).toHaveValue('Chablis'));
         expect(screen.getByText('Granska uppgifterna före sparning')).toBeVisible();
@@ -93,9 +102,11 @@ describe('cellar interactions', () => {
             .spyOn(globalThis, 'fetch')
             .mockResolvedValue({ ok: false, json: async () => ({ message: 'Analysen tog för lång tid.' }) } as Response);
         render(<WineForm wine={null} racks={[]} />);
-        fireEvent.change(screen.getByLabelText('Etikettbild'), { target: { files: [new File(['photo'], 'label.jpg', { type: 'image/jpeg' })] } });
+        fireEvent.change(screen.getByLabelText('Flaskbild'), { target: { files: [new File(['photo'], 'label.jpg', { type: 'image/jpeg' })] } });
         fireEvent.click(screen.getByRole('button', { name: 'Läs etiketten' }));
-        await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Analysen tog för lång tid.'));
+        await waitFor(() =>
+            expect(screen.getAllByRole('alert').some((alert) => alert.textContent?.includes('Analysen tog för lång tid.'))).toBe(true),
+        );
         fireEvent.change(screen.getByLabelText('Vinets namn *'), { target: { value: 'Manuellt vin' } });
         expect(screen.getByLabelText('Vinets namn *')).toHaveValue('Manuellt vin');
         mock.mockRestore();

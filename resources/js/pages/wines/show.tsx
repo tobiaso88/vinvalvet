@@ -27,7 +27,7 @@ export default function WineShow({ wine, racks }: { wine: Wine; racks: Rack[] })
                 <section className="border-border bg-card rounded-xl border p-6">
                     <div className="bg-muted/60 mb-6 flex h-56 items-center justify-center rounded-lg">
                         {wine.label_url ? (
-                            <img src={wine.label_url} alt={'Etikett för ' + wine.name} className="h-full w-full object-contain p-4" />
+                            <img src={wine.label_url} alt={'Flaskbild för ' + wine.name} className="h-full w-full object-contain p-4" />
                         ) : (
                             <WineIcon className="h-36 w-20 stroke-[.8]" style={{ color: typeColors[wine.type] }} />
                         )}

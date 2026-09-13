@@ -79,6 +79,7 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
                 className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]"
                 onSubmit={(e) => {
                     e.preventDefault();
+                    if (scanning || form.processing) return;
                     form.transform((data) => ({
                         ...data,
                         grapes: grapes
@@ -243,25 +244,28 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
                 <aside className="order-first xl:order-last">
                     <section className="border-border bg-card flex flex-col gap-4 rounded-xl border p-6">
                         <Camera className="text-primary size-7" />
-                        <h2 className="font-serif text-2xl">Fånga etiketten</h2>
+                        <h2 className="font-serif text-2xl">Fånga flaskan</h2>
                         <p className="text-muted-foreground text-sm leading-relaxed">
-                            Ta ett foto eller välj en bild. Läsningen fyller i uppgifterna som du sedan granskar.
+                            Ta ett foto av hela flaskan. Bakgrunden tas bort och bilden skärps och rätas upp automatiskt. Granska bilden före
+                            sparning.
                         </p>
                         <Input
-                            aria-label="Etikettbild"
+                            aria-label="Flaskbild"
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
                             capture="environment"
                             disabled={scanning}
                             onChange={(e) => {
-                                form.setData('label', e.target.files?.[0] ?? null);
+                                const file = e.target.files?.[0] ?? null;
+                                form.setData('label', file);
                                 setScan(null);
+                                setScanError('');
                             }}
                         />
                         {(preview ?? wine?.label_url) && (
                             <img
                                 src={preview ?? wine?.label_url ?? ''}
-                                alt="Förhandsvisning av etiketten"
+                                alt="Förhandsvisning av flaskbilden"
                                 className="bg-muted max-h-64 w-full rounded-lg object-contain"
                             />
                         )}
@@ -270,8 +274,8 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
                             {scanning ? 'Läser etiketten …' : 'Läs etiketten'}
                         </Button>
                         <p className="text-muted-foreground text-xs leading-relaxed">
-                            JPEG, PNG eller WebP, högst 10 MB. Fotot skickas till OpenAI när du väljer Läs etiketten och sparas privat på vinet när du
-                            sparar formuläret.
+                            JPEG, PNG eller WebP, högst 10 MB. Läs etiketten skickar originalfotot till OpenAI för att fylla i vinuppgifterna. När du
+                            sparar lagras bilden privat och förbättras i bakgrunden. Originalbilden visas tills förbättringen är klar.
                         </p>
                         {scanError && (
                             <p role="alert" className="text-destructive text-sm">
