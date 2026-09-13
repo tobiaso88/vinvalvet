@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'required' => ':attribute måste anges.',
+    'present' => ':attribute måste skickas med.',
+    'string' => ':attribute måste vara text.',
+    'integer' => ':attribute måste vara ett heltal.',
+    'numeric' => ':attribute måste vara ett tal.',
+    'email' => 'Ange en giltig e-postadress.',
+    'unique' => ':attribute används redan.',
+    'exists' => 'Det valda värdet för :attribute är inte tillgängligt.',
+    'enum' => 'Välj ett giltigt värde för :attribute.',
+    'in' => 'Välj ett giltigt värde för :attribute.',
+    'array' => ':attribute måste vara en lista.',
+    'distinct' => ':attribute får inte innehålla dubbletter.',
+    'image' => ':attribute måste vara en bild.',
+    'mimes' => ':attribute måste vara en fil av typen :values.',
+    'dimensions' => 'Bilden har ogiltiga mått.',
+    'date_format' => ':attribute måste ha formatet :format.',
+    'current_password' => 'Det nuvarande lösenordet stämmer inte.',
+    'confirmed' => 'Lösenorden stämmer inte överens.',
+    'required_with' => ':attribute måste anges tillsammans med :values.',
+    'between' => ['numeric' => ':attribute måste vara mellan :min och :max.'],
+    'min' => ['string' => ':attribute måste innehålla minst :min tecken.'],
+    'max' => ['string' => ':attribute får innehålla högst :max tecken.', 'array' => ':attribute får innehålla högst :max värden.', 'file' => ':attribute får vara högst :max kilobyte.', 'numeric' => ':attribute får vara högst :max.'],
+    'attributes' => ['name' => 'Namn', 'producer' => 'Producent', 'vintage' => 'Årgång', 'type' => 'Vintyp', 'body' => 'Fyllighet', 'country' => 'Land', 'region' => 'Region', 'alcohol' => 'Alkoholhalt', 'grapes' => 'Druvor', 'label' => 'Etikettbild', 'quantity' => 'Antal flaskor', 'rows' => 'Antal rader', 'columns' => 'Antal kolumner', 'password' => 'Lösenord', 'email' => 'E-postadress', 'dish' => 'Maträtt', 'positions' => 'Placeringar'],
+];

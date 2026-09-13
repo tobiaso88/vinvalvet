@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\BottleStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Bottle extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['wine_rack_id', 'row', 'column', 'status'];
+
+    protected $attributes = ['status' => 'available'];
+
+    protected $appends = ['location'];
+
+    protected function casts(): array
+    {
+        return ['status' => BottleStatus::class, 'row' => 'integer', 'column' => 'integer'];
+    }
+
+    public function wine(): BelongsTo
+    {
+        return $this->belongsTo(Wine::class);
+    }
+
+    public function rack(): BelongsTo
+    {
+        return $this->belongsTo(WineRack::class, 'wine_rack_id');
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(BottleEvent::class);
+    }
+
+    public function getLocationAttribute(): string
+    {
+        return $this->wine_rack_id ? $this->rack->name.' · '.chr(64 + $this->row).$this->column : 'Oplacerad';
+    }
+}
