@@ -13,7 +13,10 @@ export default function RackGrid({
 }) {
     const bottles = new Map((rack.bottles ?? []).map((b) => [b.row + ':' + b.column, b]));
     return (
-        <div className="border-border bg-muted/40 min-w-0 max-w-full shrink-0 overflow-x-auto rounded-xl border p-3 sm:p-5" aria-label={'Hyllplatser i ' + rack.name}>
+        <div
+            className="border-border bg-muted/40 max-w-full min-w-0 shrink-0 overflow-x-auto rounded-xl border p-3 sm:p-5"
+            aria-label={'Hyllplatser i ' + rack.name}
+        >
             <div
                 className="grid gap-2"
                 style={{ gridTemplateColumns: 'repeat(' + rack.columns + ', minmax(90px, 1fr))', minWidth: rack.columns * 98 - 8 }}

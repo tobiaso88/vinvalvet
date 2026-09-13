@@ -179,6 +179,6 @@ it('reports inventory counts and filters history by wine and event', function ()
     $rack = WineRack::factory()->for($user)->create(['rows' => 2, 'columns' => 3]);
     $this->actingAs($user)->post('/wines', winePayload())->assertSessionHasNoErrors();
     $wine = $user->wines()->first();
-    $this->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('stats.bottles', 2)->where('stats.free', 6)->where('stats.unplaced',2));
-    $this->get('/activity?type=created&wine_id='.$wine->id)->assertInertia(fn (Assert $page) => $page->has('events.data',2));
+    $this->get('/dashboard')->assertInertia(fn (Assert $page) => $page->where('stats.bottles', 2)->where('stats.free', 6)->where('stats.unplaced', 2));
+    $this->get('/activity?type=created&wine_id='.$wine->id)->assertInertia(fn (Assert $page) => $page->has('events.data', 2));
 });

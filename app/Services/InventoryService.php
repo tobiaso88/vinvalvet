@@ -41,8 +41,9 @@ class InventoryService
 
     public function place(Bottle $bottle, array $position): void
     {
-        DB::transaction(function () use ($bottle, $position) {
-            $this->lockOwner($bottle->wine->user_id);
+        $userId = $bottle->wine->user_id;
+        DB::transaction(function () use ($bottle, $position, $userId) {
+            $this->lockOwner($userId);
             $bottle->refresh()->load('rack', 'wine');
             $this->ensureAvailable($bottle);
             $from = $bottle->location;
@@ -72,8 +73,9 @@ class InventoryService
 
     public function finish(Bottle $bottle, BottleStatus $status): void
     {
-        DB::transaction(function () use ($bottle, $status) {
-            $this->lockOwner($bottle->wine->user_id);
+        $userId = $bottle->wine->user_id;
+        DB::transaction(function () use ($bottle, $status, $userId) {
+            $this->lockOwner($userId);
             $bottle->refresh()->load('rack', 'wine');
             $this->ensureAvailable($bottle);
             $from = $bottle->location;

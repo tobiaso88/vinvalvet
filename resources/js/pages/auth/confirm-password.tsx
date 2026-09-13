@@ -23,10 +23,7 @@ export default function ConfirmPassword() {
     };
 
     return (
-        <AuthLayout
-            title="Bekräfta ditt lösenord"
-            description="Bekräfta ditt lösenord innan du fortsätter till den skyddade delen av appen."
-        >
+        <AuthLayout title="Bekräfta ditt lösenord" description="Bekräfta ditt lösenord innan du fortsätter till den skyddade delen av appen.">
             <Head title="Bekräfta lösenord" />
 
             <form onSubmit={submit}>

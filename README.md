@@ -45,7 +45,7 @@ vendor/bin/pint --format agent
 
 `npm run check` kör TypeScript-kontroll, React-komponenttester och produktionsbygge. `npm run format` formaterar frontendkoden. Pint formaterar PHP. I ett Git-repository kan Pint begränsas till ändringar med `--dirty`.
 
-Webbläsartesterna körs med `npm run test:browser` efter ett frontendbygge. De använder installerad Google Chrome, en separat server på port 8098 och den separata databasen `winefinder_browser_test`, som skapas och töms automatiskt. Den lokala MySQL-testanslutningen är för närvarande `root` utan lösenord på `127.0.0.1:3306`; anpassa testkonfigurationen vid annan anslutning. Kör inte flera webbläsartestsviter samtidigt mot samma databas. Testerna använder ingen OpenAI-nyckel.
+Webbläsartesterna körs med `npm run test:browser` efter ett frontendbygge. De använder installerad Google Chrome, en separat server på port 8098 och den separata databasen `winefinder_browser_test`, som skapas och töms automatiskt. MySQL-anslutningen hämtas från miljökonfigurationen; testanvändaren behöver rättighet att skapa testdatabasen. Kör `php artisan config:clear` före testerna om konfigurationen är cachad. Kör inte flera webbläsartestsviter samtidigt mot samma databas. Testerna använder ingen OpenAI-nyckel.
 
 Desktop- och mobilflödena kontrollerar inloggning, hyllor, placering, flytt, konsumtion, vinformulär, sökning, AI-felhantering, aktivitet och konto. Skärmbilder hamnar i `storage/app/testing`; Playwright sparar spår vid fel i `test-results`.
 

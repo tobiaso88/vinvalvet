@@ -101,15 +101,13 @@ describe('cellar interactions', () => {
         mock.mockRestore();
     });
     it('shows a recommendation and a link to the exact bottle location', async () => {
-        const mock = vi
-            .spyOn(globalThis, 'fetch')
-            .mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    recommendations: [{ wine: { ...wine, bottles: rack.bottles }, rank: 1, reason: 'Passar svampen.' }],
-                    message: 'Ett förslag.',
-                }),
-            } as Response);
+        const mock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                recommendations: [{ wine: { ...wine, bottles: rack.bottles }, rank: 1, reason: 'Passar svampen.' }],
+                message: 'Ett förslag.',
+            }),
+        } as Response);
         render(<Pairing />);
         fireEvent.change(screen.getByLabelText('Vad blir det till middag?'), { target: { value: 'Svamprisotto' } });
         fireEvent.click(screen.getByRole('button', { name: 'Hitta passande vin' }));

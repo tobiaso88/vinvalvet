@@ -112,6 +112,6 @@ it('limits scans separately for each user', function () {
         $this->postJson('/wine-scans', ['label' => UploadedFile::fake()->image('label.jpg')])->assertOk();
     }
     $this->postJson('/wine-scans', ['label' => UploadedFile::fake()->image('label.jpg')])->assertTooManyRequests();
-    $this->actingAs(User::factory()->create())->postJson('/wine-scans',['label' => UploadedFile::fake()->image('label.jpg')])->assertOk();
+    $this->actingAs(User::factory()->create())->postJson('/wine-scans', ['label' => UploadedFile::fake()->image('label.jpg')])->assertOk();
     Http::assertSentCount(6);
 });

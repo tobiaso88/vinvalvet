@@ -8,7 +8,7 @@ test.beforeAll(() => {
         'php',
         [
             '-r',
-            '$p=new PDO("mysql:host=127.0.0.1;port=3306", "root", ""); $p->exec("CREATE DATABASE IF NOT EXISTS winefinder_browser_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");',
+            'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap(); $c=config("database.connections.mysql"); $p=new PDO("mysql:host=".$c["host"].";port=".$c["port"], $c["username"], $c["password"]); $p->exec("CREATE DATABASE IF NOT EXISTS winefinder_browser_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");',
         ],
         { env },
     );

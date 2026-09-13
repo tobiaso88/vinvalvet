@@ -27,5 +27,5 @@ it('resets a password and revokes sessions and remember tokens', function () {
         ->expectsQuestion('Bekräfta lösenord', 'another-strong-password')->assertSuccessful();
     expect(Hash::check('another-strong-password', $user->fresh()->password))->toBeTrue();
     expect($user->fresh()->remember_token)->not->toBe('old-token');
-    $this->assertDatabaseMissing('sessions',['id' => 'test-session']);
+    $this->assertDatabaseMissing('sessions', ['id' => 'test-session']);
 });
