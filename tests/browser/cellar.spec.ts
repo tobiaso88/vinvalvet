@@ -13,7 +13,7 @@ test.beforeAll(() => {
         { env },
     );
     execFileSync('php', ['artisan', 'migrate:fresh', '--force', '--no-interaction'], { env });
-    const output = execFileSync('php', ['artisan', 'db:seed', '--class=WinefinderDemoSeeder', '--no-interaction'], { env, encoding: 'utf8' });
+    const output = execFileSync('php', ['artisan', 'db:seed', '--class=VinvalvetDemoSeeder', '--no-interaction'], { env, encoding: 'utf8' });
     password = output.match(/Tillfälligt lösenord: (.+)/)![1].trim();
 });
 
@@ -21,7 +21,9 @@ test('complete cellar workflow', async ({ page }, testInfo) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto('/login');
-    await page.getByLabel('E-postadress').fill('demo@winefinder.test');
+    await expect(page).toHaveTitle('Logga in - Vinvalvet');
+    await expect(page.getByText('Vinvalvet', { exact: true })).toBeVisible();
+    await page.getByLabel('E-postadress').fill('demo@vinvalvet.test');
     await page.getByLabel('Lösenord', { exact: true }).fill(password);
     await page.getByRole('button', { name: 'Logga in', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Din vinkällare', exact: true })).toBeVisible();

@@ -1,4 +1,5 @@
 {
+    "name": "vinvalvet",
     "private": true,
     "type": "module",
     "scripts": {

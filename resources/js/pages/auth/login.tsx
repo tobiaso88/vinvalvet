@@ -11,7 +11,7 @@ export default function Login() {
             <div className="w-full max-w-md">
                 <div className="mb-9 flex items-center justify-center gap-3">
                     <Wine className="text-primary size-8" />
-                    <span className="font-serif text-3xl">Winefinder</span>
+                    <span className="font-serif text-3xl">Vinvalvet</span>
                 </div>
                 <form
                     className="border-border bg-card flex flex-col gap-5 rounded-xl border p-8"

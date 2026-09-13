@@ -11,20 +11,31 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class WinefinderDemoSeeder extends Seeder
+class VinvalvetDemoSeeder extends Seeder
 {
+    private const string DEMO_EMAIL = 'demo@vinvalvet.test';
+
+    private const string LEGACY_DEMO_EMAIL = 'demo@winefinder.test';
+
     public function run(InventoryService $inventory): void
     {
         if (! app()->environment('local', 'testing')) {
             throw new \RuntimeException('Demodata får bara skapas lokalt eller i testmiljön.');
         }
-        if (User::where('email', 'demo@winefinder.test')->exists()) {
+        if (User::where('email', self::DEMO_EMAIL)->exists()) {
             $this->command?->info('Demokontot finns redan. Inga ändringar gjordes.');
 
             return;
         }
+        $legacyUser = User::where('email', self::LEGACY_DEMO_EMAIL)->first();
+        if ($legacyUser) {
+            $legacyUser->update(['email' => self::DEMO_EMAIL]);
+            $this->command?->info('Demokontot har uppdaterats till '.self::DEMO_EMAIL.'.');
+
+            return;
+        }
         $password = Str::password(20);
-        $user = User::create(['name' => 'Vinälskare', 'email' => 'demo@winefinder.test', 'password' => Hash::make($password)]);
+        $user = User::create(['name' => 'Vinälskare', 'email' => self::DEMO_EMAIL, 'password' => Hash::make($password)]);
         $rack = $user->racks()->create(['name' => 'Källaren', 'description' => 'Den stora hyllan, till vänster om dörren.', 'rows' => 4, 'columns' => 6]);
         $user->racks()->create(['name' => 'Vinkylen', 'description' => 'Redo att servera.', 'rows' => 3, 'columns' => 4]);
         $wines = [
@@ -46,7 +57,7 @@ class WinefinderDemoSeeder extends Seeder
             }
             $inventory->add($wine, $quantity, $positions);
         }
-        $this->command?->info('Demokonto: demo@winefinder.test');
+        $this->command?->info('Demokonto: '.self::DEMO_EMAIL);
         $this->command?->info('Tillfälligt lösenord: '.$password);
     }
 }

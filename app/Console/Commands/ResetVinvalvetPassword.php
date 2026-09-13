@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
-class ResetWinefinderPassword extends Command
+class ResetVinvalvetPassword extends Command
 {
-    protected $signature = 'winefinder:reset-password';
+    protected $signature = 'vinvalvet:reset-password';
 
     protected $description = 'Återställ ett kontos lösenord och avsluta befintliga sessioner';
 

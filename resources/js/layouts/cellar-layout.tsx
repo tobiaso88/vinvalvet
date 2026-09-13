@@ -28,7 +28,7 @@ export default function CellarLayout({
                 <Link href="/dashboard" className="mb-12 flex items-center gap-3 px-3">
                     <Wine className="text-primary size-8" />
                     <span className="font-serif text-2xl tracking-tight">
-                        Winefinder
+                        Vinvalvet
                         <span className="text-muted-foreground mt-1 block font-sans text-[9px] tracking-[.25em] uppercase">
                             Din personliga vinkällare
                         </span>
@@ -76,7 +76,7 @@ export default function CellarLayout({
                 <header className="border-border bg-card flex h-16 items-center justify-between border-b px-5 sm:px-9">
                     <Link href="/dashboard" className="flex items-center gap-2 font-serif text-xl lg:hidden">
                         <Wine className="text-primary size-5" />
-                        Winefinder
+                        Vinvalvet
                     </Link>
                     <span className="text-muted-foreground hidden text-xs lg:block">
                         MIN VINKÄLLARE <span className="text-border mx-3">/</span> {title}
@@ -89,7 +89,7 @@ export default function CellarLayout({
                 <main className="mx-auto max-w-7xl px-5 py-8 pb-28 sm:px-9 sm:py-10 lg:pb-12">
                     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
                         <div>
-                            <p className="text-primary mb-2 text-[10px] font-semibold tracking-[.22em] uppercase">Winefinder</p>
+                            <p className="text-primary mb-2 text-[10px] font-semibold tracking-[.22em] uppercase">Vinvalvet</p>
                             <h1 className="font-serif text-4xl tracking-tight sm:text-[42px]">{title}</h1>
                             {description && <p className="text-muted-foreground mt-3 max-w-xl text-sm leading-relaxed">{description}</p>}
                         </div>

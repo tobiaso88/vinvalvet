@@ -1,4 +1,4 @@
-# Winefinder
+# Vinvalvet
 
 En privat, svensk vinkällare med visuella hyllor, flaskhistorik, etikettläsning och matmatchning. Byggd med Laravel 13, Inertia 3, React 19, TypeScript och Tailwind CSS 4. Vintyp, fyllighet, flaskstatus och händelsetyp använder PHP-enums.
 
@@ -12,14 +12,14 @@ Du behöver PHP 8.4 med PDO MySQL, GD och EXIF, Composer 2, Node.js 22 eller sen
 4. Kör `php artisan key:generate` endast vid första installationen. Byt inte nyckel i en befintlig installation.
 5. Kör `php artisan migrate --no-interaction`.
 6. Boosts instruktioner finns i `AGENTS.md`, skills i `.agents/skills` och MCP-konfiguration i `.codex/config.toml`. Vid installation i en annan editor kan `php artisan boost:install` konfigurera dess anslutning. `php artisan boost:mcp` startar servern via stdio och väntar på editoranslutningen.
-7. Skapa ditt konto med `php artisan winefinder:create-user`. Dialogen ber om namn, e-post och ett dolt lösenord på minst 12 tecken.
+7. Skapa ditt konto med `php artisan vinvalvet:create-user`. Dialogen ber om namn, e-post och ett dolt lösenord på minst 12 tecken.
 8. Starta med `composer run dev` och använd adressen som Laravel-servern skriver ut. Alternativt: kör `npm run build` och `php artisan serve` utan Vites utvecklingsserver.
 
-Publik registrering och e-postbaserad lösenordsåterställning är avstängda. Driftansvarig återställer lösenord med `php artisan winefinder:reset-password`; befintliga databassessioner avslutas samtidigt.
+Publik registrering och e-postbaserad lösenordsåterställning är avstängda. Driftansvarig återställer lösenord med `php artisan vinvalvet:reset-password`; befintliga databassessioner avslutas samtidigt.
 
 ## Demodata
 
-`php artisan db:seed --class=WinefinderDemoSeeder --no-interaction` skapar ett separat demokonto med sex fiktiva viner, 19 flaskor och två hyllor. Det slumpade lösenordet visas en gång i terminalen. Om demokontot redan finns lämnas det oförändrat. Använd återställningskommandot om du behöver ett nytt lösenord. Seedern får bara köras lokalt eller i testmiljö.
+`php artisan db:seed --class=VinvalvetDemoSeeder --no-interaction` skapar ett separat demokonto med adressen `demo@vinvalvet.test`, sex fiktiva viner, 19 flaskor och två hyllor. Det slumpade lösenordet visas en gång i terminalen. Ett äldre `demo@winefinder.test` byter adress utan att lager eller lösenord ändras; ett demokonto som redan har den nya adressen lämnas oförändrat. Använd återställningskommandot om du behöver ett nytt lösenord. Seedern får bara köras lokalt eller i testmiljö.
 
 ## AI och privata bilder
 

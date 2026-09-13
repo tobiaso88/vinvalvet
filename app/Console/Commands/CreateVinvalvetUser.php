@@ -6,11 +6,11 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
-class CreateWinefinderUser extends Command
+class CreateVinvalvetUser extends Command
 {
-    protected $signature = 'winefinder:create-user';
+    protected $signature = 'vinvalvet:create-user';
 
-    protected $description = 'Skapa ett privat Winefinder-konto med ett dolt lösenord';
+    protected $description = 'Skapa ett privat Vinvalvet-konto med ett dolt lösenord';
 
     public function handle(): int
     {
