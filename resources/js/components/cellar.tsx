@@ -84,6 +84,18 @@ export function WineCard({ wine }: { wine: Wine }) {
                     </span>
                     <ArrowRight className="text-primary size-4" />
                 </div>
+                {wine.research && (
+                    <p className="text-muted-foreground mt-2 text-xs">
+                        Research:{' '}
+                        {wine.research.status === 'completed'
+                            ? 'klar'
+                            : wine.research.status === 'failed'
+                              ? 'misslyckades'
+                              : wine.research.status === 'processing'
+                                ? 'pågår'
+                                : 'väntar'}
+                    </p>
+                )}
                 {wine.bottles && (
                     <p className="text-muted-foreground mt-2 flex items-center gap-1 truncate text-xs">
                         <MapPin className="size-3 shrink-0" />

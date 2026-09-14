@@ -57,7 +57,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#fdba74,#c4b5fd\" \"php artisan serve\" \"npm run dev\" \"php artisan queue:work bottle-images --sleep=3 --timeout=150 --tries=1\" --names=server,vite,images"
+            "npx concurrently -c \"#93c5fd,#fdba74,#c4b5fd,#86efac\" \"php artisan serve\" \"npm run dev\" \"php artisan queue:work bottle-images --sleep=3 --timeout=150 --tries=1\" \"php artisan queue:work wine-research --sleep=3 --timeout=110 --tries=1\" --names=server,vite,images,research"
         ],
         "test": ["@php artisan test --compact"]
     },

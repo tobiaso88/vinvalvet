@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BottleStatus;
+use App\Enums\WineResearchStatus;
 use App\Http\Requests\WineRequest;
 use App\Jobs\EnhanceBottleImage;
 use App\Models\Grape;
@@ -24,7 +25,7 @@ class WineController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = $request->user()->wines()->with(['grapes', 'bottles' => fn ($q) => $q->where('status', BottleStatus::Available)->with('rack')]);
+        $query = $request->user()->wines()->with(['research', 'grapes', 'bottles' => fn ($q) => $q->where('status', BottleStatus::Available)->with('rack')]);
         if ($request->filled('q')) {
             $term = '%'.mb_substr($request->string('q')->toString(), 0, 255).'%';
             $query->where(function ($q) use ($term) {
@@ -52,6 +53,15 @@ class WineController extends Controller
         return Inertia::render('wines/index', [
             'wines' => $query->orderBy('name')->orderBy('id')->paginate(18)->withQueryString(),
             'filters' => array_merge(['stock' => 'available'], $request->only('q', 'type', 'body', 'vintage', 'stock')),
+            'researchProgress' => [
+                'pending' => $request->user()->wines()->whereHas('research', fn ($research) => $research->where('status', WineResearchStatus::Pending))->count(),
+                'processing' => $request->user()->wines()->whereHas('research', fn ($research) => $research->where('status', WineResearchStatus::Processing))->count(),
+                'completed' => $request->user()->wines()->whereHas('research', fn ($research) => $research->where('status', WineResearchStatus::Completed))->count(),
+                'failed' => $request->user()->wines()->whereHas('research', fn ($research) => $research->where('status', WineResearchStatus::Failed))->count(),
+                'eligible' => $request->user()->wines()->where(function ($wines) {
+                    $wines->whereDoesntHave('research')->orWhereHas('research', fn ($research) => $research->where('status', WineResearchStatus::Failed));
+                })->count(),
+            ],
         ]);
     }
 
@@ -93,8 +103,8 @@ class WineController extends Controller
         Gate::authorize('view', $wine);
 
         return Inertia::render('wines/show', [
-            'wine' => $wine->load('grapes', 'bottles.rack'),
-            'racks' => $request->user()->racks()->with('bottles.rack', 'bottles.wine')->orderBy('name')->get(),
+            'wine' => $wine->load('research', 'grapes', 'bottles.rack', 'bottles.valuation'),
+            'racks' => $request->user()->racks()->with('bottles.rack', 'bottles.wine', 'bottles.valuation')->orderBy('name')->get(),
         ]);
     }
 

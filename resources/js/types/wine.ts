@@ -2,6 +2,38 @@ export type WineType = 'red' | 'white' | 'rose' | 'sparkling' | 'dessert' | 'for
 export type WineBody = 'light' | 'medium' | 'full';
 export type BottleStatus = 'available' | 'consumed' | 'removed';
 export type EventType = 'created' | 'placed' | 'moved' | 'consumed' | 'removed';
+export type WineResearchStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type BottleValuationStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type WineResearchField = 'producer' | 'vintage' | 'country' | 'region' | 'ean' | 'systembolaget_number' | 'alcohol' | 'body' | 'grapes';
+export interface WineResearchSource {
+    title: string;
+    url: string;
+}
+export interface WineResearchRating {
+    provider: string;
+    score: number;
+    scale: number;
+    review_count: number;
+    vintage: number | null;
+    url: string;
+    observed_at: string;
+}
+export interface WineResearch {
+    id: number;
+    status: WineResearchStatus;
+    suggestions: {
+        fields: Partial<Record<WineResearchField, string | number | string[] | null>>;
+        confidence: Partial<Record<WineResearchField, 'high' | 'medium' | 'low' | 'unknown'>>;
+        source_urls: Partial<Record<WineResearchField, string[]>>;
+    } | null;
+    ratings: WineResearchRating[] | null;
+    sources: WineResearchSource[] | null;
+    warnings: string[] | null;
+    applied_fields: WineResearchField[] | null;
+    error_message: string | null;
+    researched_at: string | null;
+    reviewed_at: string | null;
+}
 export interface Wine {
     id: number;
     name: string;
@@ -17,6 +49,7 @@ export interface Wine {
     notes: string | null;
     label_url: string | null;
     grapes: { id: number; name: string }[];
+    research?: WineResearch | null;
     bottles?: Bottle[];
     bottles_count?: number;
 }
@@ -28,7 +61,22 @@ export interface Bottle {
     column: number | null;
     status: BottleStatus;
     location: string;
+    purchase_price: number | null;
+    estimated_value: number | null;
+    valuation?: BottleValuation | null;
     wine?: Wine;
+}
+export interface BottleValuation {
+    id: number;
+    status: BottleValuationStatus;
+    estimated_value: number | null;
+    currency: 'SEK';
+    basis: string | null;
+    sources: WineResearchSource[] | null;
+    warnings: string[] | null;
+    error_message: string | null;
+    valued_at: string | null;
+    reviewed_at: string | null;
 }
 export interface Rack {
     id: number;

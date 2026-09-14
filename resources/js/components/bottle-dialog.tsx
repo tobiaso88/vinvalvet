@@ -1,3 +1,4 @@
+import BottleFinancials from '@/components/bottle-financials';
 import { Errors, Field, Select } from '@/components/cellar';
 import RackGrid from '@/components/rack-grid';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,7 @@ export default function BottleDialog({
                     </DialogDescription>
                 </DialogHeader>
                 <Errors errors={form.errors} />
+                {bottle && <BottleFinancials bottle={bottle} />}
                 {bottle ? (
                     <div className="flex flex-wrap gap-2">
                         <Button asChild variant="outline">

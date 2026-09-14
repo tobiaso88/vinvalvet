@@ -34,10 +34,10 @@ class WineRackController extends Controller
         Gate::authorize('view', $rack);
 
         return Inertia::render('racks/show', [
-            'rack' => $rack->load('bottles.wine', 'bottles.rack'),
-            'racks' => $request->user()->racks()->with('bottles.rack')->orderBy('name')->get(),
+            'rack' => $rack->load('bottles.wine', 'bottles.rack', 'bottles.valuation'),
+            'racks' => $request->user()->racks()->with('bottles.rack', 'bottles.valuation')->orderBy('name')->get(),
             'unplaced' => Bottle::whereHas('wine', fn ($q) => $q->where('user_id', $request->user()->id))
-                ->where('status', BottleStatus::Available)->whereNull('wine_rack_id')->with('wine', 'rack')->orderBy('id')->get(),
+                ->where('status', BottleStatus::Available)->whereNull('wine_rack_id')->with('wine', 'rack', 'valuation')->orderBy('id')->get(),
         ]);
     }
 

@@ -1,12 +1,16 @@
 import BottleDialog from '@/components/bottle-dialog';
+import BottleFinancials from '@/components/bottle-financials';
 import { Errors } from '@/components/cellar';
 import RackGrid from '@/components/rack-grid';
+import WineResearchCard from '@/components/wine-research';
 import Pairing from '@/pages/pairing';
 import WineForm from '@/pages/wines/form';
 import type { Rack, Wine, WineScanResult } from '@/types/wine';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+
+const poll = vi.hoisted(() => ({ start: vi.fn(), stop: vi.fn() }));
 
 vi.mock('@inertiajs/react', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@inertiajs/react')>();
@@ -19,6 +23,7 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
             </a>
         ),
         usePage: () => ({ url: '/wines/create', props: { auth: { user: { name: 'Test' } }, flash: {} } }),
+        usePoll: () => poll,
     };
 });
 const wine: Wine = {
@@ -43,10 +48,88 @@ const rack: Rack = {
     description: null,
     rows: 2,
     columns: 2,
-    bottles: [{ id: 1, wine_id: 1, wine_rack_id: 1, row: 1, column: 1, status: 'available', location: 'Källaren · A1', wine }],
+    bottles: [
+        {
+            id: 1,
+            wine_id: 1,
+            wine_rack_id: 1,
+            row: 1,
+            column: 1,
+            status: 'available',
+            location: 'Källaren · A1',
+            purchase_price: null,
+            estimated_value: null,
+            wine,
+        },
+    ],
 };
 
 describe('cellar interactions', () => {
+    it('polls while wine research is active', () => {
+        poll.start.mockClear();
+        render(
+            <WineResearchCard
+                wine={{
+                    ...wine,
+                    research: {
+                        id: 1,
+                        status: 'processing',
+                        suggestions: null,
+                        ratings: null,
+                        sources: null,
+                        warnings: null,
+                        applied_fields: [],
+                        error_message: null,
+                        researched_at: null,
+                        reviewed_at: null,
+                    },
+                }}
+            />,
+        );
+        expect(screen.getByText('Söker och kontrollerar källor …')).toBeVisible();
+        expect(poll.start).toHaveBeenCalled();
+    });
+    it('shows selectable sourced suggestions and verified ratings', () => {
+        render(
+            <WineResearchCard
+                wine={{
+                    ...wine,
+                    producer: null,
+                    research: {
+                        id: 2,
+                        status: 'completed',
+                        suggestions: {
+                            fields: { producer: 'Ny producent' },
+                            confidence: { producer: 'high' },
+                            source_urls: { producer: ['https://producer.example/wine'] },
+                        },
+                        ratings: [
+                            {
+                                provider: 'Vivino',
+                                score: 4.2,
+                                scale: 5,
+                                review_count: 120,
+                                vintage: 2020,
+                                url: 'https://vivino.example/wine',
+                                observed_at: '2026-09-14T10:00:00Z',
+                            },
+                        ],
+                        sources: [{ title: 'Producentens vinsida', url: 'https://producer.example/wine' }],
+                        warnings: [],
+                        applied_fields: [],
+                        error_message: null,
+                        researched_at: '2026-09-14T10:00:00Z',
+                        reviewed_at: null,
+                    },
+                }}
+            />,
+        );
+        expect(screen.getByText('Ny producent')).toBeVisible();
+        expect(screen.getByRole('checkbox')).toBeChecked();
+        expect(screen.getByRole('link', { name: /Vivino/ })).toHaveAttribute('rel', 'noopener noreferrer');
+        expect(screen.getByRole('link', { name: /Producentens vinsida/ })).toHaveAttribute('target', '_blank');
+        expect(screen.getByRole('button', { name: /Godkänn valda uppgifter/ })).toBeEnabled();
+    });
     it('keeps saving available and sends no enhancement request on image selection', () => {
         const mock = vi.spyOn(globalThis, 'fetch');
         render(<WineForm wine={null} racks={[]} />);
@@ -69,6 +152,35 @@ describe('cellar interactions', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Markera konsumerad' }));
         expect(screen.getByText(/Markera flaskan som konsumerad/)).toBeVisible();
         expect(screen.getByRole('button', { name: 'Bekräfta' })).toBeVisible();
+    });
+    it('shows a sourced bottle valuation and saves a purchase price separately', async () => {
+        const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ purchase_price: 299 }) } as Response);
+        render(
+            <BottleFinancials
+                bottle={{
+                    ...rack.bottles![0],
+                    valuation: {
+                        id: 1,
+                        status: 'completed',
+                        estimated_value: 875,
+                        currency: 'SEK',
+                        basis: 'Aktuellt marknadspris.',
+                        sources: [{ title: 'Handlare', url: 'https://merchant.example/wine' }],
+                        warnings: [],
+                        error_message: null,
+                        valued_at: '2026-09-14T10:00:00Z',
+                        reviewed_at: null,
+                    },
+                }}
+            />,
+        );
+        expect(screen.getByText(/875/)).toBeVisible();
+        expect(screen.getByRole('link', { name: /Handlare/ })).toHaveAttribute('rel', 'noopener noreferrer');
+        fireEvent.change(screen.getByLabelText('Inköpspris'), { target: { value: '299' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Spara inköpspris' }));
+        await waitFor(() => expect(screen.getByText('Inköpspriset har sparats.')).toBeVisible());
+        expect(fetchMock).toHaveBeenCalledWith('/bottles/1/financials', expect.objectContaining({ method: 'PATCH' }));
+        fetchMock.mockRestore();
     });
     it('renders validation errors as an alert', () => {
         render(<Errors errors={{ position: 'Platsen är redan upptagen.' }} />);

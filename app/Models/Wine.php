@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Wine extends Model
 {
@@ -43,5 +44,10 @@ class Wine extends Model
     public function bottles(): HasMany
     {
         return $this->hasMany(Bottle::class);
+    }
+
+    public function research(): HasOne
+    {
+        return $this->hasOne(WineResearch::class);
     }
 }

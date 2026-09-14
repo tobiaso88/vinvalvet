@@ -29,6 +29,14 @@ return [
     */
 
     'connections' => [
+        'wine-research' => [
+            'driver' => 'database',
+            'table' => 'jobs',
+            'queue' => 'wine-research',
+            'retry_after' => 140,
+            'after_commit' => true,
+        ],
+
         'bottle-images' => [
             'driver' => 'database',
             'table' => 'jobs',
