@@ -2,15 +2,15 @@
 
 namespace App\Jobs;
 
-use App\Enums\BottleValuationStatus;
-use App\Models\BottleValuation;
+use App\Enums\WineValuationStatus;
+use App\Models\WineValuation;
 use App\Services\OpenAiService;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Throwable;
 
-class ValueBottle implements ShouldBeUnique, ShouldQueue
+class ValueWine implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
@@ -35,12 +35,12 @@ class ValueBottle implements ShouldBeUnique, ShouldQueue
 
     public function handle(OpenAiService $ai): void
     {
-        $valuation = BottleValuation::with('bottle.wine.grapes')->find($this->valuationId);
-        if (! $valuation || $valuation->status !== BottleValuationStatus::Pending) {
+        $valuation = WineValuation::with('wine.grapes')->find($this->valuationId);
+        if (! $valuation || $valuation->status !== WineValuationStatus::Pending) {
             return;
         }
-        $valuation->update(['status' => BottleValuationStatus::Processing, 'error_message' => null]);
-        $wine = $valuation->bottle->wine;
+        $valuation->update(['status' => WineValuationStatus::Processing, 'error_message' => null]);
+        $wine = $valuation->wine;
         $snapshot = [
             ...$wine->only('name', 'producer', 'vintage', 'type', 'country', 'region', 'ean', 'systembolaget_number', 'alcohol'),
             'type' => $wine->type->value,
@@ -51,7 +51,7 @@ class ValueBottle implements ShouldBeUnique, ShouldQueue
         try {
             $result = $ai->valueBottle($snapshot);
             $valuation->update([
-                'status' => BottleValuationStatus::Completed,
+                'status' => WineValuationStatus::Completed,
                 'input_snapshot' => $snapshot,
                 ...$result,
                 'error_message' => null,
@@ -59,7 +59,7 @@ class ValueBottle implements ShouldBeUnique, ShouldQueue
             ]);
         } catch (Throwable $exception) {
             $valuation->update([
-                'status' => BottleValuationStatus::Failed,
+                'status' => WineValuationStatus::Failed,
                 'input_snapshot' => $snapshot,
                 'error_message' => 'Värderingen kunde inte slutföras. Försök igen senare.',
             ]);

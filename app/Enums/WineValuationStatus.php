@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum BottleValuationStatus: string
+enum WineValuationStatus: string
 {
     case Pending = 'pending';
     case Processing = 'processing';

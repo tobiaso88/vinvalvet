@@ -2,15 +2,15 @@
 
 namespace Database\Factories;
 
-use App\Enums\BottleValuationStatus;
-use App\Models\Bottle;
-use App\Models\BottleValuation;
+use App\Enums\WineValuationStatus;
+use App\Models\Wine;
+use App\Models\WineValuation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<BottleValuation>
+ * @extends Factory<WineValuation>
  */
-class BottleValuationFactory extends Factory
+class WineValuationFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -20,8 +20,8 @@ class BottleValuationFactory extends Factory
     public function definition(): array
     {
         return [
-            'bottle_id' => Bottle::factory(),
-            'status' => BottleValuationStatus::Completed,
+            'wine_id' => Wine::factory(),
+            'status' => WineValuationStatus::Completed,
             'estimated_value' => fake()->randomFloat(2, 100, 5000),
             'currency' => 'SEK',
             'basis' => fake()->sentence(),

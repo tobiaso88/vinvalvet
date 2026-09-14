@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\BottleValuationStatus;
-use App\Jobs\ValueBottle;
-use App\Models\Bottle;
+use App\Enums\WineValuationStatus;
+use App\Jobs\ValueWine;
+use App\Models\Wine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
-class BottleValuationController extends Controller
+class WineValuationController extends Controller
 {
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Bottle $bottle): JsonResponse
+    public function __invoke(Wine $wine): JsonResponse
     {
-        Gate::authorize('update', $bottle);
-        $valuation = DB::transaction(function () use ($bottle) {
-            $lockedBottle = Bottle::whereKey($bottle->id)->lockForUpdate()->firstOrFail();
-            $valuation = $lockedBottle->valuation()->firstOrNew();
-            if ($valuation->exists && in_array($valuation->status, [BottleValuationStatus::Pending, BottleValuationStatus::Processing], true)) {
+        Gate::authorize('update', $wine);
+        $valuation = DB::transaction(function () use ($wine) {
+            $lockedWine = Wine::whereKey($wine->id)->lockForUpdate()->firstOrFail();
+            $valuation = $lockedWine->valuation()->firstOrNew();
+            if ($valuation->exists && in_array($valuation->status, [WineValuationStatus::Pending, WineValuationStatus::Processing], true)) {
                 return $valuation;
             }
             $valuation->fill([
-                'status' => BottleValuationStatus::Pending,
+                'status' => WineValuationStatus::Pending,
                 'input_snapshot' => null,
                 'estimated_value' => null,
                 'currency' => 'SEK',
@@ -35,7 +35,7 @@ class BottleValuationController extends Controller
                 'valued_at' => null,
                 'reviewed_at' => null,
             ])->save();
-            ValueBottle::dispatch($valuation->id);
+            ValueWine::dispatch($valuation->id);
 
             return $valuation;
         }, 3);

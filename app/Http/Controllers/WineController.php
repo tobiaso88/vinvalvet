@@ -104,8 +104,8 @@ class WineController extends Controller
         Gate::authorize('view', $wine);
 
         return Inertia::render('wines/show', [
-            'wine' => $wine->load('research', 'grapes', 'bottles.rack', 'bottles.valuation'),
-            'racks' => $request->user()->racks()->with('bottles.rack', 'bottles.wine', 'bottles.valuation')->orderBy('name')->get(),
+            'wine' => $wine->load('research', 'valuation', 'grapes', 'bottles.rack'),
+            'racks' => $request->user()->racks()->with('bottles.rack', 'bottles.wine')->orderBy('name')->get(),
         ]);
     }
 

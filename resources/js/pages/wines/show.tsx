@@ -2,6 +2,7 @@ import BottleDialog from '@/components/bottle-dialog';
 import { Errors, Field, WineBadge } from '@/components/cellar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import WineFinancials from '@/components/wine-financials';
 import WineResearchCard from '@/components/wine-research';
 import CellarLayout from '@/layouts/cellar-layout';
 import { type Bottle, type Rack, typeColors, type Wine, wineBodies } from '@/types/wine';
@@ -60,6 +61,7 @@ export default function WineShow({ wine, racks }: { wine: Wine; racks: Rack[] })
                 </section>
                 <section className="flex flex-col gap-5">
                     <WineResearchCard wine={wine} />
+                    <WineFinancials wine={wine} availableBottleCount={available.length} />
                     <div className="border-border bg-card rounded-xl border p-6">
                         <h2 className="mb-5 font-serif text-2xl">Här ligger dina flaskor</h2>
                         {available.length ? (

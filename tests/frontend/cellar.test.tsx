@@ -2,6 +2,7 @@ import BottleDialog from '@/components/bottle-dialog';
 import BottleFinancials from '@/components/bottle-financials';
 import { Errors } from '@/components/cellar';
 import RackGrid from '@/components/rack-grid';
+import WineFinancials from '@/components/wine-financials';
 import WineResearchCard from '@/components/wine-research';
 import Pairing from '@/pages/pairing';
 import WineForm from '@/pages/wines/form';
@@ -39,6 +40,7 @@ const wine: Wine = {
     alcohol: 14,
     body: 'full',
     notes: null,
+    estimated_value: null,
     label_url: null,
     grapes: [],
 };
@@ -58,7 +60,6 @@ const rack: Rack = {
             status: 'available',
             location: 'Källaren · A1',
             purchase_price: null,
-            estimated_value: null,
             wine,
         },
     ],
@@ -154,12 +155,29 @@ describe('cellar interactions', () => {
         expect(screen.getByText(/Markera flaskan som konsumerad/)).toBeVisible();
         expect(screen.getByRole('button', { name: 'Bekräfta' })).toBeVisible();
     });
-    it('shows a sourced bottle valuation and saves a purchase price separately', async () => {
-        const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ purchase_price: 299 }) } as Response);
+    it('applies a purchase price to all available bottles when selected', async () => {
+        const fetchMock = vi
+            .spyOn(globalThis, 'fetch')
+            .mockResolvedValue({ ok: true, json: async () => ({ purchase_price: 299, updated_count: 8 }) } as Response);
+        render(<BottleFinancials bottle={rack.bottles![0]} />);
+        fireEvent.change(screen.getByLabelText('Inköpspris'), { target: { value: '299' } });
+        fireEvent.click(screen.getByRole('checkbox'));
+        fireEvent.click(screen.getByRole('button', { name: 'Spara inköpspris' }));
+        await waitFor(() => expect(screen.getByText('Inköpspriset har sparats på 8 tillgängliga flaskor.')).toBeVisible());
+        expect(fetchMock).toHaveBeenCalledWith('/bottles/1/financials', expect.objectContaining({ method: 'PATCH' }));
+        expect(fetchMock).toHaveBeenCalledWith(
+            '/bottles/1/financials',
+            expect.objectContaining({ body: JSON.stringify({ purchase_price: 299, apply_to_available_wine_bottles: true }) }),
+        );
+        fetchMock.mockRestore();
+    });
+    it('shows a sourced valuation and total value on the wine', () => {
         render(
-            <BottleFinancials
-                bottle={{
-                    ...rack.bottles![0],
+            <WineFinancials
+                availableBottleCount={8}
+                wine={{
+                    ...wine,
+                    estimated_value: 875,
                     valuation: {
                         id: 1,
                         status: 'completed',
@@ -175,13 +193,8 @@ describe('cellar interactions', () => {
                 }}
             />,
         );
-        expect(screen.getByText(/875/)).toBeVisible();
+        expect(screen.getByText(/7 000/)).toBeVisible();
         expect(screen.getByRole('link', { name: /Handlare/ })).toHaveAttribute('rel', 'noopener noreferrer');
-        fireEvent.change(screen.getByLabelText('Inköpspris'), { target: { value: '299' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Spara inköpspris' }));
-        await waitFor(() => expect(screen.getByText('Inköpspriset har sparats.')).toBeVisible());
-        expect(fetchMock).toHaveBeenCalledWith('/bottles/1/financials', expect.objectContaining({ method: 'PATCH' }));
-        fetchMock.mockRestore();
     });
     it('renders validation errors as an alert', () => {
         render(<Errors errors={{ position: 'Platsen är redan upptagen.' }} />);

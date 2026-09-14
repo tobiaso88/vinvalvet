@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('pairing', fn (Request $request) => Limit::perMinute(10)->by($request->user()->id));
         RateLimiter::for('wine-research', fn (Request $request) => Limit::perMinute(10)->by($request->user()->id));
         RateLimiter::for('wine-research-batches', fn (Request $request) => Limit::perMinute(2)->by($request->user()->id));
-        RateLimiter::for('bottle-valuations', fn (Request $request) => Limit::perMinute(10)->by($request->user()->id));
+        RateLimiter::for('wine-valuations', fn (Request $request) => Limit::perMinute(10)->by($request->user()->id));
 
         DevCommands::artisan(
             'queue:listen wine-research --tries=1 --timeout=110',

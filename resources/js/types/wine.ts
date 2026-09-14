@@ -3,7 +3,7 @@ export type WineBody = 'light' | 'medium' | 'full';
 export type BottleStatus = 'available' | 'consumed' | 'removed';
 export type EventType = 'created' | 'placed' | 'moved' | 'consumed' | 'removed';
 export type WineResearchStatus = 'pending' | 'processing' | 'completed' | 'failed';
-export type BottleValuationStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type WineValuationStatus = 'pending' | 'processing' | 'completed' | 'failed';
 export type WineResearchField = 'producer' | 'vintage' | 'country' | 'region' | 'ean' | 'systembolaget_number' | 'alcohol' | 'body' | 'grapes';
 export interface WineResearchSource {
     title: string;
@@ -47,9 +47,11 @@ export interface Wine {
     alcohol: number | null;
     body: WineBody | null;
     notes: string | null;
+    estimated_value: number | null;
     label_url: string | null;
     grapes: { id: number; name: string }[];
     research?: WineResearch | null;
+    valuation?: WineValuation | null;
     bottles?: Bottle[];
     bottles_count?: number;
 }
@@ -62,13 +64,11 @@ export interface Bottle {
     status: BottleStatus;
     location: string;
     purchase_price: number | null;
-    estimated_value: number | null;
-    valuation?: BottleValuation | null;
     wine?: Wine;
 }
-export interface BottleValuation {
+export interface WineValuation {
     id: number;
-    status: BottleValuationStatus;
+    status: WineValuationStatus;
     estimated_value: number | null;
     currency: 'SEK';
     basis: string | null;

@@ -24,6 +24,7 @@ class UpdateBottleFinancialsRequest extends FormRequest
     {
         return [
             'purchase_price' => ['present', 'nullable', 'numeric', 'between:0,99999999.99'],
+            'apply_to_available_wine_bottles' => ['sometimes', 'boolean'],
         ];
     }
 }

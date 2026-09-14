@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use App\Enums\BottleValuationStatus;
-use Database\Factories\BottleValuationFactory;
+use App\Enums\WineValuationStatus;
+use Database\Factories\WineValuationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class BottleValuation extends Model
+class WineValuation extends Model
 {
-    /** @use HasFactory<BottleValuationFactory> */
+    /** @use HasFactory<WineValuationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -29,7 +29,7 @@ class BottleValuation extends Model
     protected function casts(): array
     {
         return [
-            'status' => BottleValuationStatus::class,
+            'status' => WineValuationStatus::class,
             'input_snapshot' => 'array',
             'estimated_value' => 'float',
             'sources' => 'array',
@@ -39,8 +39,8 @@ class BottleValuation extends Model
         ];
     }
 
-    public function bottle(): BelongsTo
+    public function wine(): BelongsTo
     {
-        return $this->belongsTo(Bottle::class);
+        return $this->belongsTo(Wine::class);
     }
 }
