@@ -133,6 +133,7 @@ describe('cellar interactions', () => {
     it('keeps saving available and sends no enhancement request on image selection', () => {
         const mock = vi.spyOn(globalThis, 'fetch');
         render(<WineForm wine={null} racks={[]} />);
+        expect(screen.getByLabelText('Inköpspris per flaska')).toBeVisible();
         fireEvent.change(screen.getByLabelText('Flaskbild'), { target: { files: [new File(['photo'], 'photo.jpg', { type: 'image/jpeg' })] } });
         expect(mock).not.toHaveBeenCalled();
         expect(screen.getByRole('button', { name: 'Spara vin och flaskor' })).toBeEnabled();

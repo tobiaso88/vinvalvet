@@ -24,6 +24,7 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
         grapes: wine?.grapes.map((g) => g.name) ?? ([] as string[]),
         label: null as File | null,
         quantity: 1,
+        purchase_price: '',
         positions: [] as RackSlot[],
     });
     const [grapes, setGrapes] = useState(wine?.grapes.map((g) => g.name).join(', ') ?? '');
@@ -207,6 +208,14 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
                                         const quantity = Number(e.target.value);
                                         form.setData((previous) => ({ ...previous, quantity, positions: previous.positions.slice(0, quantity) }));
                                     }}
+                                />
+                            </Field>
+                            <Field label="Inköpspris per flaska" error={form.errors.purchase_price}>
+                                <Input
+                                    inputMode="decimal"
+                                    value={form.data.purchase_price}
+                                    onChange={(e) => form.setData('purchase_price', e.target.value.replace(',', '.'))}
+                                    placeholder="Exempel: 249"
                                 />
                             </Field>
                             {racks.length > 0 && (

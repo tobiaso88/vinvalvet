@@ -19,9 +19,9 @@ class InventoryService
         User::whereKey($userId)->lockForUpdate()->firstOrFail();
     }
 
-    public function add(Wine $wine, int $quantity, array $positions = []): void
+    public function add(Wine $wine, int $quantity, array $positions = [], ?float $purchasePrice = null): void
     {
-        DB::transaction(function () use ($wine, $quantity, $positions) {
+        DB::transaction(function () use ($wine, $quantity, $positions, $purchasePrice) {
             $this->lockOwner($wine->user_id);
             if (count($positions) > $quantity) {
                 throw ValidationException::withMessages(['positions' => 'Välj högst en plats per flaska.']);
@@ -30,7 +30,7 @@ class InventoryService
                 if ($quantity === 0) {
                     break;
                 }
-                $bottle = $wine->bottles()->create(['status' => BottleStatus::Available]);
+                $bottle = $wine->bottles()->create(['status' => BottleStatus::Available, 'purchase_price' => $purchasePrice]);
                 $this->event($bottle, BottleEventType::Created, null, 'Oplacerad');
                 if (isset($positions[$number - 1])) {
                     $this->place($bottle, $positions[$number - 1]);

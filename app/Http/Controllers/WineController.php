@@ -76,11 +76,12 @@ class WineController extends Controller
         try {
             $wine = DB::transaction(function () use ($request, $inventory, $path) {
                 $inventory->lockOwner($request->user()->id);
-                $wine = $request->user()->wines()->make($request->safe()->except('grapes', 'quantity', 'positions', 'label'));
+                $wine = $request->user()->wines()->make($request->safe()->except('grapes', 'quantity', 'purchase_price', 'positions', 'label'));
                 $wine->label_path = $path;
                 $wine->save();
                 $this->syncGrapes($wine, $request->validated('grapes'));
-                $inventory->add($wine, $request->integer('quantity'), $request->validated('positions', []));
+                $purchasePrice = $request->filled('purchase_price') ? (float) $request->validated('purchase_price') : null;
+                $inventory->add($wine, $request->integer('quantity'), $request->validated('positions', []), $purchasePrice);
 
                 return $wine;
             }, 3);
@@ -123,7 +124,7 @@ class WineController extends Controller
         try {
             DB::transaction(function () use ($request, $wine, $inventory, $path) {
                 $inventory->lockOwner($request->user()->id);
-                $wine->fill($request->safe()->except('grapes', 'quantity', 'positions', 'label'));
+                $wine->fill($request->safe()->except('grapes', 'quantity', 'purchase_price', 'positions', 'label'));
                 if ($path) {
                     $wine->label_path = $path;
                 }

@@ -26,6 +26,7 @@ it('creates wine metadata grapes and positioned bottles with immutable event loc
     $this->actingAs($user)->post('/wines', winePayload([
         'ean' => '8001234567897',
         'systembolaget_number' => '07424201',
+        'purchase_price' => 249.50,
         'positions' => [['wine_rack_id' => $rack->id, 'row' => 1, 'column' => 2]],
     ]))->assertSessionHasNoErrors()->assertRedirect();
     $wine = $user->wines()->firstOrFail();
@@ -34,10 +35,24 @@ it('creates wine metadata grapes and positioned bottles with immutable event loc
     expect($wine->systembolaget_number)->toBe('07424201');
     expect($wine->grapes->pluck('name')->all())->toBe(['Nebbiolo']);
     expect($wine->bottles()->count())->toBe(2);
+    expect($wine->bottles()->orderBy('id')->get()->pluck('purchase_price')->all())->toBe([249.5, 249.5]);
     $this->assertDatabaseHas('bottles', ['wine_id' => $wine->id, 'row' => 1, 'column' => 2, 'wine_rack_id' => $rack->id]);
     $this->assertDatabaseHas('bottle_events', ['type' => 'placed', 'to_location' => 'Källaren · A2']);
     $this->actingAs($user)->put('/racks/'.$rack->id, ['name' => 'Ny hylla', 'rows' => 4, 'columns' => 6])->assertSessionHasNoErrors();
     $this->assertDatabaseHas('bottle_events', ['type' => 'placed', 'to_location' => 'Källaren · A2']);
+});
+
+it('stores a new purchase price on every bottle in a restock batch', function () {
+    $wine = Wine::factory()->create();
+    Bottle::factory()->for($wine)->create(['purchase_price' => 100]);
+
+    $this->actingAs($wine->user)->post('/bottles', [
+        'wine_id' => $wine->id,
+        'quantity' => 2,
+        'purchase_price' => 199.50,
+    ])->assertSessionHasNoErrors()->assertRedirect();
+
+    expect($wine->bottles()->orderBy('id')->get()->pluck('purchase_price')->all())->toBe([100.0, 199.5, 199.5]);
 });
 
 it('casts nullable bodies and event types to enums', function () {
@@ -158,6 +173,7 @@ it('validates domain values and ignores owner injection', function () {
     $user = User::factory()->create();
     $this->actingAs($user)->post('/wines', winePayload(['type' => 'beer', 'body' => 'massive', 'vintage' => 1700, 'alcohol' => 99]))->assertSessionHasErrors(['type', 'body', 'vintage', 'alcohol']);
     $this->post('/wines', winePayload(['ean' => '1234', 'systembolaget_number' => 'SB-123']))->assertSessionHasErrors(['ean', 'systembolaget_number']);
+    $this->post('/wines', winePayload(['purchase_price' => -1]))->assertSessionHasErrors('purchase_price');
     $this->post('/wines', winePayload(['user_id' => 999, 'quantity' => 0]))->assertSessionHasNoErrors();
     $this->assertDatabaseHas('wines', ['user_id' => $user->id]);
 });

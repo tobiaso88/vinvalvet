@@ -17,7 +17,8 @@ class BottleController extends Controller
         $wine = Wine::findOrFail($request->integer('wine_id'));
         Gate::authorize('update', $wine);
         $positions = $request->filled('wine_rack_id') ? [$request->safe()->only('wine_rack_id', 'row', 'column')] : [];
-        $inventory->add($wine, $request->integer('quantity', 1), $positions);
+        $purchasePrice = $request->filled('purchase_price') ? (float) $request->validated('purchase_price') : null;
+        $inventory->add($wine, $request->integer('quantity', 1), $positions, $purchasePrice);
 
         return back()->with('success', 'Flaskorna har lagts till.');
     }

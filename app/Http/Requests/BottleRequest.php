@@ -17,6 +17,7 @@ class BottleRequest extends FormRequest
         return [
             'wine_id' => [$this->route('bottle') ? 'sometimes' : 'required', 'integer', Rule::exists('wines', 'id')->where('user_id', $this->user()->id)],
             'quantity' => ['sometimes', 'integer', 'between:1,100'],
+            'purchase_price' => ['nullable', 'numeric', 'between:0,99999999.99'],
             'wine_rack_id' => ['nullable', 'integer', Rule::exists('wine_racks', 'id')->where('user_id', $this->user()->id)],
             'row' => ['nullable', 'required_with:wine_rack_id', 'integer', 'between:1,26'],
             'column' => ['nullable', 'required_with:wine_rack_id', 'integer', 'between:1,50'],

@@ -34,6 +34,7 @@ class WineRequest extends FormRequest
             'grapes.*' => ['required', 'string', 'max:100', 'distinct:ignore_case'],
             'label' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240', 'dimensions:max_width=12000,max_height=12000'],
             'quantity' => [$this->route('wine') ? 'sometimes' : 'required', 'integer', 'between:0,100'],
+            'purchase_price' => ['nullable', 'numeric', 'between:0,99999999.99'],
             'positions' => ['sometimes', 'array', 'max:100'],
             'positions.*' => ['array:wine_rack_id,row,column'],
             'positions.*.wine_rack_id' => ['required', 'integer', Rule::exists('wine_racks', 'id')->where('user_id', $this->user()->id)],

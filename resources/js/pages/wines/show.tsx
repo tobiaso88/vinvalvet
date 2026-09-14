@@ -11,7 +11,7 @@ import { useState } from 'react';
 export default function WineShow({ wine, racks }: { wine: Wine; racks: Rack[] }) {
     const [bottle, setBottle] = useState<Bottle | null>(null),
         [remove, setRemove] = useState(false);
-    const form = useForm({ wine_id: wine.id, quantity: 1 });
+    const form = useForm({ wine_id: wine.id, quantity: 1, purchase_price: '' });
     const deletion = useForm({});
     const available = wine.bottles?.filter((b) => b.status === 'available') ?? [];
     return (
@@ -97,6 +97,14 @@ export default function WineShow({ wine, racks }: { wine: Wine; racks: Rack[] })
                                 required
                                 value={form.data.quantity}
                                 onChange={(e) => form.setData('quantity', Number(e.target.value))}
+                            />
+                        </Field>
+                        <Field label="Inköpspris per flaska" error={form.errors.purchase_price}>
+                            <Input
+                                inputMode="decimal"
+                                value={form.data.purchase_price}
+                                onChange={(e) => form.setData('purchase_price', e.target.value.replace(',', '.'))}
+                                placeholder="Exempel: 249"
                             />
                         </Field>
                         <p className="text-muted-foreground text-xs">De läggs till som oplacerade. Välj sedan en hyllplats.</p>
