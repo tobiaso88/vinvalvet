@@ -4,6 +4,7 @@ import { Errors } from '@/components/cellar';
 import RackGrid from '@/components/rack-grid';
 import WineFinancials from '@/components/wine-financials';
 import WineResearchCard from '@/components/wine-research';
+import Dashboard from '@/pages/dashboard';
 import Pairing from '@/pages/pairing';
 import WineForm from '@/pages/wines/form';
 import type { Rack, Wine, WineScanResult } from '@/types/wine';
@@ -66,6 +67,20 @@ const rack: Rack = {
 };
 
 describe('cellar interactions', () => {
+    it('shows the total collection value on the dashboard', () => {
+        render(
+            <Dashboard
+                stats={{ bottles: 3, wines: 2, capacity: 10, occupied: 3, free: 7, unplaced: 0, total_value: 450.5 }}
+                racks={[]}
+                wines={[]}
+                events={[]}
+            />,
+        );
+
+        expect(screen.getByText('Samlingens värde')).toBeVisible();
+        expect(screen.getByText(/450,50/)).toBeVisible();
+    });
+
     it('polls while wine research is active', () => {
         poll.start.mockClear();
         render(

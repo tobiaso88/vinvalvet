@@ -5,13 +5,15 @@ import type { BottleEvent, Rack, Wine } from '@/types/wine';
 import { Link } from '@inertiajs/react';
 import { ArrowRight, Grid2X2, Plus, UtensilsCrossed } from 'lucide-react';
 
+const money = new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK' });
+
 export default function Dashboard({
     stats,
     racks,
     wines,
     events,
 }: {
-    stats: { bottles: number; wines: number; capacity: number; occupied: number; free: number; unplaced: number };
+    stats: { bottles: number; wines: number; capacity: number; occupied: number; free: number; unplaced: number; total_value: number };
     racks: Rack[];
     wines: Wine[];
     events: BottleEvent[];
@@ -29,10 +31,11 @@ export default function Dashboard({
                 </Button>
             }
         >
-            <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
+            <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
                 {[
                     ['Flaskor hemma', stats.bottles, 'Redo för nästa tillfälle'],
                     ['Olika viner', stats.wines, 'I din personliga samling'],
+                    ['Samlingens värde', money.format(stats.total_value), 'Tillgängliga flaskor med värdering'],
                     ['Lediga platser', stats.free, 'Av ' + stats.capacity + ' hyllplatser'],
                     ['Oplacerade', stats.unplaced, 'Flaskor att hitta en plats åt'],
                 ].map(([label, value, note]) => (

@@ -17,11 +17,16 @@ class DashboardController extends Controller
         $available = Bottle::whereHas('wine', fn ($q) => $q->where('user_id', $user->id))->where('status', BottleStatus::Available);
         $capacity = $racks->sum(fn ($rack) => $rack->rows * $rack->columns);
         $occupied = $racks->sum('bottles_count');
+        $totalValue = Bottle::query()
+            ->join('wines', 'wines.id', '=', 'bottles.wine_id')
+            ->where('wines.user_id', $user->id)
+            ->where('bottles.status', BottleStatus::Available)
+            ->sum('wines.estimated_value');
 
         return Inertia::render('dashboard', [
             'stats' => ['bottles' => (clone $available)->count(), 'wines' => $user->wines()->count(),
                 'capacity' => $capacity, 'occupied' => $occupied, 'free' => $capacity - $occupied,
-                'unplaced' => (clone $available)->whereNull('wine_rack_id')->count()],
+                'unplaced' => (clone $available)->whereNull('wine_rack_id')->count(), 'total_value' => (float) $totalValue],
             'racks' => $racks,
             'events' => $user->bottleEvents()->with('bottle.wine', 'bottle.rack')->latest('id')->limit(5)->get(),
             'wines' => $user->wines()->with('grapes')->withCount(['bottles' => fn ($q) => $q->where('status', BottleStatus::Available)])->latest('id')->limit(4)->get(),
