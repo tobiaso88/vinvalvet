@@ -34,10 +34,30 @@ host('production')
     ->setSshArguments(['-o IdentitiesOnly=yes'])
     ->setDeployPath($deploymentValue('DEPLOY_PATH'));
 
-desc('Build frontend assets');
-task('npm:build', function (): void {
-    run('cd {{release_path}} && npm ci --no-audit --no-fund && npm run build && rm -rf node_modules');
+desc('Build frontend assets locally');
+task('frontend:build', function (): void {
+    $frontendChanges = runLocally(
+        'git status --porcelain -- package.json package-lock.json vite.config.js resources/js resources/css',
+        cwd: __DIR__,
+    );
+
+    if ($frontendChanges !== '') {
+        throw new RuntimeException('Commit frontend changes before deploying.');
+    }
+
+    runLocally('npm ci --no-audit --no-fund', cwd: __DIR__, timeout: 600);
+    runLocally('npm run build', cwd: __DIR__, timeout: 600);
+})->once();
+
+desc('Upload frontend assets');
+task('frontend:upload', function (): void {
+    run('mkdir -p {{release_path}}/public/build');
+    upload(__DIR__.'/public/build/', '{{release_path}}/public/build/', [
+        'options' => ['--delete'],
+        'timeout' => 300,
+    ]);
 });
 
-after('deploy:update_code', 'npm:build');
+before('deploy', 'frontend:build');
+after('deploy:update_code', 'frontend:upload');
 after('deploy:failed', 'deploy:unlock');
