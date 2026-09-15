@@ -1,14 +1,19 @@
-import AppLogoIcon from './app-logo-icon';
+import { cn } from '@/lib/utils';
 
-export default function AppLogo() {
+export default function AppLogo({ variant = 'horizontal', className }: { variant?: 'horizontal' | 'stacked'; className?: string }) {
+    const stacked = variant === 'stacked';
+
     return (
-        <>
-            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
-                <AppLogoIcon className="size-5 fill-current text-white dark:text-black" />
-            </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-none font-semibold">Vinvalvet</span>
-            </div>
-        </>
+        <img
+            src={stacked ? '/vinvalvet-logo-stacked.png' : '/vinvalvet-logo-proposal.png'}
+            alt="Vinvalvet"
+            width={stacked ? 1536 : 2172}
+            height={stacked ? 1024 : 724}
+            className={cn(
+                'h-auto shrink-0 object-contain dark:invert',
+                stacked ? 'w-48 mix-blend-multiply dark:mix-blend-screen dark:grayscale' : 'w-44 dark:brightness-0',
+                className,
+            )}
+        />
     );
 }

@@ -10,6 +10,8 @@
 
         <title inertia>{{ config('app.name', 'Vinvalvet') }}</title>
 
+        <link rel="icon" href="/favicon.ico?v=vinvalvet" sizes="any">
+        <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
         <link rel="manifest" href="/manifest.webmanifest">
 

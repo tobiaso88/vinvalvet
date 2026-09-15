@@ -1,17 +1,16 @@
+import AppLogo from '@/components/app-logo';
 import { Errors, Field } from '@/components/cellar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Head, useForm } from '@inertiajs/react';
-import { Wine } from 'lucide-react';
 export default function Login() {
     const form = useForm({ email: '', password: '', remember: false });
     return (
         <div className="bg-background grid min-h-screen place-items-center p-5">
             <Head title="Logga in" />
             <div className="w-full max-w-md">
-                <div className="mb-9 flex items-center justify-center gap-3">
-                    <Wine className="text-primary size-8" />
-                    <span className="font-serif text-3xl">Vinvalvet</span>
+                <div className="mb-7 flex justify-center">
+                    <AppLogo variant="stacked" className="w-64" />
                 </div>
                 <form
                     className="border-border bg-card flex flex-col gap-5 rounded-xl border p-8"

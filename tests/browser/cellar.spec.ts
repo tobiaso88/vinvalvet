@@ -22,7 +22,7 @@ test('complete cellar workflow', async ({ page }, testInfo) => {
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto('/login');
     await expect(page).toHaveTitle('Logga in - Vinvalvet');
-    await expect(page.getByText('Vinvalvet', { exact: true })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Vinvalvet', exact: true })).toBeVisible();
     await page.getByLabel('E-postadress').fill('demo@vinvalvet.test');
     await page.getByLabel('Lösenord', { exact: true }).fill(password);
     await page.getByRole('button', { name: 'Logga in', exact: true }).click();

@@ -6,6 +6,7 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
 import AppLogo from './app-logo';
+import AppLogoIcon from './app-logo-icon';
 
 const mainNavItems: NavItem[] = [
     {
@@ -36,7 +37,9 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/dashboard" prefetch>
-                                <AppLogo />
+                                <AppLogo className="group-data-[collapsible=icon]:hidden" />
+                                <AppLogoIcon className="hidden size-8 group-data-[collapsible=icon]:block" />
+                                <span className="sr-only">Till översikten</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

@@ -1,3 +1,4 @@
+import AppLogo from '@/components/app-logo';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Grid2X2, History, LayoutDashboard, LogOut, Plus, Settings, UtensilsCrossed, Wine } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -25,14 +26,9 @@ export default function CellarLayout({
         <div className="bg-background min-h-screen">
             <Head title={title} />
             <aside className="border-border bg-card fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r px-5 py-8 lg:flex">
-                <Link href="/dashboard" viewTransition className="mb-12 flex items-center gap-3 px-3">
-                    <Wine className="text-primary size-8" />
-                    <span className="font-serif text-2xl tracking-tight">
-                        Vinvalvet
-                        <span className="text-muted-foreground mt-1 block font-sans text-[9px] tracking-[.25em] uppercase">
-                            Din personliga vinkällare
-                        </span>
-                    </span>
+                <Link href="/dashboard" viewTransition className="mb-8 flex flex-col items-center gap-2">
+                    <AppLogo variant="stacked" className="w-44" />
+                    <span className="text-muted-foreground text-[9px] tracking-[.18em] uppercase">Din personliga vinkällare</span>
                 </Link>
                 <p className="text-muted-foreground mb-3 px-3 text-[10px] font-semibold tracking-[.18em] uppercase">Samlingen</p>
                 <nav aria-label="Huvudnavigation" className="flex flex-col gap-1">
@@ -83,9 +79,8 @@ export default function CellarLayout({
             </aside>
             <div className="lg:ml-60">
                 <header className="border-border bg-card flex h-16 items-center justify-between border-b px-5 sm:px-9">
-                    <Link href="/dashboard" viewTransition className="flex items-center gap-2 font-serif text-xl lg:hidden">
-                        <Wine className="text-primary size-5" />
-                        Vinvalvet
+                    <Link href="/dashboard" viewTransition className="flex items-center lg:hidden">
+                        <AppLogo className="w-36 sm:w-44" />
                     </Link>
                     <span className="text-muted-foreground hidden text-xs lg:block">
                         MIN VINKÄLLARE <span className="text-border mx-3">/</span> {title}
