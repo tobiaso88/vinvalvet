@@ -1,6 +1,7 @@
 import BottleDialog from '@/components/bottle-dialog';
 import BottleFinancials from '@/components/bottle-financials';
 import { Errors } from '@/components/cellar';
+import NavigationLoadingIndicator from '@/components/navigation-loading-indicator';
 import RackGrid from '@/components/rack-grid';
 import WineFinancials from '@/components/wine-financials';
 import WineResearchCard from '@/components/wine-research';
@@ -67,6 +68,23 @@ const rack: Rack = {
 };
 
 describe('cellar interactions', () => {
+    it('shows loading feedback for visits that wait for the server', () => {
+        render(<NavigationLoadingIndicator />);
+
+        fireEvent(document, new CustomEvent('inertia:start', { detail: { visit: { prefetch: false, showProgress: true } } }));
+        expect(screen.getByRole('status')).toHaveTextContent('Laddar…');
+
+        fireEvent(document, new CustomEvent('inertia:finish', { detail: { visit: { prefetch: false, showProgress: true } } }));
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('does not show loading feedback for background prefetches', () => {
+        render(<NavigationLoadingIndicator />);
+
+        fireEvent(document, new CustomEvent('inertia:start', { detail: { visit: { prefetch: true, showProgress: false } } }));
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
     it('shows the total collection value on the dashboard', () => {
         render(
             <Dashboard

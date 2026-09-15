@@ -5,6 +5,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
+import NavigationLoadingIndicator from './components/navigation-loading-indicator';
 import { initializeTheme } from './hooks/use-appearance';
 
 declare global {
@@ -23,12 +24,14 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        root.render(
+            <>
+                <App {...props} />
+                <NavigationLoadingIndicator />
+            </>,
+        );
     },
-    progress: {
-        delay: 80,
-        color: '#753345',
-    },
+    progress: false,
 });
 
 // This will set light / dark mode on load...
