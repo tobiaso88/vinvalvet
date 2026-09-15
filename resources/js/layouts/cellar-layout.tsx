@@ -25,7 +25,7 @@ export default function CellarLayout({
         <div className="bg-background min-h-screen">
             <Head title={title} />
             <aside className="border-border bg-card fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r px-5 py-8 lg:flex">
-                <Link href="/dashboard" className="mb-12 flex items-center gap-3 px-3">
+                <Link href="/dashboard" viewTransition className="mb-12 flex items-center gap-3 px-3">
                     <Wine className="text-primary size-8" />
                     <span className="font-serif text-2xl tracking-tight">
                         Vinvalvet
@@ -40,8 +40,11 @@ export default function CellarLayout({
                         <Link
                             key={href}
                             href={href}
+                            prefetch="mount"
+                            cacheFor={['30s', '5m']}
+                            viewTransition
                             className={
-                                'flex items-center gap-3 rounded-lg px-3 py-3 text-sm ' +
+                                'flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition-[transform,opacity] active:scale-[0.98] data-loading:opacity-60 ' +
                                 (url.startsWith(href)
                                     ? 'bg-primary/8 text-primary font-semibold'
                                     : 'text-muted-foreground hover:bg-muted hover:text-foreground')
@@ -57,7 +60,13 @@ export default function CellarLayout({
                         <p className="font-serif text-lg">Varje flaska har sin plats.</p>
                         <p className="text-muted-foreground mt-2 text-xs leading-relaxed">En liten överblick, ett riktigt bra vin.</p>
                     </div>
-                    <Link href="/settings/profile" className="text-muted-foreground flex items-center gap-3 px-3 text-sm">
+                    <Link
+                        href="/settings/profile"
+                        prefetch="mount"
+                        cacheFor={['30s', '5m']}
+                        viewTransition
+                        className="text-muted-foreground flex items-center gap-3 px-3 text-sm transition-[transform,opacity] active:scale-[0.98] data-loading:opacity-60"
+                    >
                         <Settings className="size-4" />
                         Inställningar
                     </Link>
@@ -74,7 +83,7 @@ export default function CellarLayout({
             </aside>
             <div className="lg:ml-60">
                 <header className="border-border bg-card flex h-16 items-center justify-between border-b px-5 sm:px-9">
-                    <Link href="/dashboard" className="flex items-center gap-2 font-serif text-xl lg:hidden">
+                    <Link href="/dashboard" viewTransition className="flex items-center gap-2 font-serif text-xl lg:hidden">
                         <Wine className="text-primary size-5" />
                         Vinvalvet
                     </Link>
@@ -111,8 +120,11 @@ export default function CellarLayout({
                     <Link
                         key={href}
                         href={href}
+                        prefetch="mount"
+                        cacheFor={['30s', '5m']}
+                        viewTransition
                         className={
-                            'flex min-w-0 flex-1 flex-col items-center gap-1 py-2 text-[10px] ' +
+                            'flex min-w-0 flex-1 flex-col items-center gap-1 py-2 text-[10px] transition-[transform,opacity] active:scale-95 data-loading:opacity-60 ' +
                             (url.startsWith(href) ? 'text-primary' : 'text-muted-foreground')
                         }
                     >
@@ -120,7 +132,13 @@ export default function CellarLayout({
                         {label}
                     </Link>
                 ))}
-                <Link href="/settings/profile" className="text-muted-foreground flex flex-1 flex-col items-center gap-1 py-2 text-[10px]">
+                <Link
+                    href="/settings/profile"
+                    prefetch="mount"
+                    cacheFor={['30s', '5m']}
+                    viewTransition
+                    className="text-muted-foreground flex flex-1 flex-col items-center gap-1 py-2 text-[10px] transition-[transform,opacity] active:scale-95 data-loading:opacity-60"
+                >
                     <Settings className="size-5" />
                     Konto
                 </Link>
