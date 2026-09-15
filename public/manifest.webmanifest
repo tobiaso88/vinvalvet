@@ -1,0 +1,19 @@
+{
+    "id": "/",
+    "name": "Vinvalvet",
+    "short_name": "Vinvalvet",
+    "lang": "sv",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#f9f8f5",
+    "theme_color": "#f9f8f5",
+    "icons": [
+        {
+            "src": "/vinvalvet-icon.png",
+            "sizes": "1254x1254",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}
