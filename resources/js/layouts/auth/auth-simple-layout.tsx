@@ -1,31 +1,18 @@
-import AppLogo from '@/components/app-logo';
 import { Link } from '@inertiajs/react';
-
-interface AuthLayoutProps {
-    children: React.ReactNode;
-    name?: string;
-    title?: string;
-    description?: string;
-}
-
-export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
+import type { ReactNode } from 'react';
+export default function AuthSimpleLayout({ children, title, description }: { children: ReactNode; title?: string; description?: string }) {
     return (
-        <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col gap-8">
-                    <div className="flex flex-col items-center gap-4">
-                        <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
-                            <AppLogo variant="stacked" />
-                        </Link>
-
-                        <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium">{title}</h1>
-                            <p className="text-muted-foreground text-center text-sm">{description}</p>
-                        </div>
-                    </div>
-                    {children}
-                </div>
-            </div>
+        <div className="bg-background flex min-h-dvh items-center px-[17px] py-10">
+            <main className="mx-auto w-full max-w-[390px]">
+                <Link href="/" className="bg-secondary text-primary mb-9 inline-flex rounded-[7px] px-2 py-[5px] text-[11px] font-semibold">
+                    <span role="img" aria-label="Vinvalvet">
+                        Vinvalvet
+                    </span>
+                </Link>
+                <h1 className="text-[29px] leading-[1.12] font-bold tracking-[-1px]">{title}</h1>
+                <p className="text-muted-foreground mt-2 mb-[22px] text-[13px] leading-relaxed">{description}</p>
+                {children}
+            </main>
         </div>
     );
 }

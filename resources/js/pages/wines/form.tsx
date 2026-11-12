@@ -6,7 +6,7 @@ import CellarLayout from '@/layouts/cellar-layout';
 import { jsonRequest } from '@/lib/json-request';
 import { type Rack, type RackSlot, type Wine, wineBodies, type WineBody, type WineScanResult, type WineType, wineTypes } from '@/types/wine';
 import { Link, useForm } from '@inertiajs/react';
-import { Camera, LoaderCircle } from 'lucide-react';
+import { Camera, ChevronLeft, LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Rack[] }) {
     const form = useForm({
@@ -27,6 +27,8 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
         purchase_price: '',
         positions: [] as RackSlot[],
     });
+    const [step, setStep] = useState<'start' | 'details' | 'stock'>(wine ? 'details' : 'start');
+    const [showPhoto, setShowPhoto] = useState(false);
     const [grapes, setGrapes] = useState(wine?.grapes.map((g) => g.name).join(', ') ?? '');
     const [rackId, setRackId] = useState(racks[0]?.id ?? 0);
     const [scanning, setScanning] = useState(false),
@@ -52,6 +54,7 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
         try {
             const result = await jsonRequest<WineScanResult>('/wine-scans', data);
             setScan(result);
+            setStep('details');
             const f = result.fields;
             form.setData((previous) => ({
                 ...previous,
@@ -73,97 +76,163 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
         }
     }
     const rack = racks.find((r) => r.id === rackId);
+    const save = () => {
+        if (scanning || form.processing) return;
+        form.transform((data) => ({
+            ...data,
+            grapes: grapes
+                .split(',')
+                .map((g) => g.trim())
+                .filter(Boolean),
+            ...(wine ? { _method: 'put' } : {}),
+        }));
+        form.post(wine ? '/wines/' + wine.id : '/wines', {
+            forceFormData: true,
+            onError: (errors) => {
+                if (Object.keys(errors).some((key) => !['quantity', 'purchase_price', 'positions'].some((prefix) => key.startsWith(prefix))))
+                    setStep('details');
+            },
+        });
+    };
+    const fields = [
+        ['name', 'Vinets namn *', 'Till exempel Barolo'],
+        ['producer', 'Producent', 'Producent'],
+        ['vintage', 'Årgång', 'NV / ingen årgång'],
+        ['country', 'Land', 'Land'],
+        ['region', 'Region', 'Region'],
+        ['ean', 'EAN', '8 eller 13 siffror'],
+        ['systembolaget_number', 'Systembolagets artikelnummer', 'Artikelnummer'],
+    ] as const;
     return (
         <CellarLayout
-            title={wine ? 'Redigera vin' : 'Lägg till ett vin'}
-            description="Skriv in uppgifterna själv eller låt ett foto av etiketten hjälpa dig på vägen."
+            title={step === 'start' ? 'Lägg till vin' : step === 'stock' ? 'Flaskor & placering' : 'Vinuppgifter'}
+            description={
+                step === 'start'
+                    ? 'Börja med etiketten eller fyll i själv.'
+                    : step === 'stock'
+                      ? 'Välj platser nu eller placera senare.'
+                      : 'Kontrollera uppgifterna innan du sparar.'
+            }
+            back={{ href: wine ? '/wines/' + wine.id : '/wines', label: 'Viner' }}
         >
             <form
-                className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]"
+                className="mx-auto flex max-w-3xl min-w-0 flex-col gap-4"
                 onSubmit={(e) => {
                     e.preventDefault();
-                    if (scanning || form.processing) return;
-                    form.transform((data) => ({
-                        ...data,
-                        grapes: grapes
-                            .split(',')
-                            .map((g) => g.trim())
-                            .filter(Boolean),
-                        ...(wine ? { _method: 'put' } : {}),
-                    }));
-                    form.post(wine ? '/wines/' + wine.id : '/wines', { forceFormData: true });
+                    if (step === 'details' && !wine) {
+                        setStep('stock');
+                    } else if (step === 'stock' || wine) save();
                 }}
             >
-                <div className="grid min-w-0 grid-cols-1 gap-6">
-                    <section className="border-border bg-card flex flex-col gap-5 rounded-xl border p-5 sm:p-7">
-                        <h2 className="font-serif text-2xl">Om vinet</h2>
-                        <Errors errors={form.errors} />
-                        <Field label="Vinets namn *" error={form.errors.name}>
-                            <Input
-                                required
-                                value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
-                                placeholder="Till exempel Barolo"
-                            />
-                        </Field>
-                        <Field label="Producent">
-                            <Input value={form.data.producer} onChange={(e) => form.setData('producer', e.target.value)} />
-                        </Field>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Field label="Årgång">
-                                <Input
-                                    type="number"
-                                    min="1800"
-                                    max={new Date().getFullYear()}
-                                    placeholder="NV / ingen årgång"
-                                    value={form.data.vintage}
-                                    onChange={(e) => form.setData('vintage', e.target.value)}
+                <Errors errors={form.errors} />
+                {(step === 'start' || showPhoto) && (
+                    <section className="flex flex-col gap-3">
+                        <div className="bg-card flex min-h-[155px] flex-col items-center justify-center gap-3 rounded-[18px] p-5">
+                            {(preview ?? wine?.label_url) ? (
+                                <img
+                                    src={preview ?? wine?.label_url ?? ''}
+                                    alt="Förhandsvisning av flaskbilden"
+                                    className="max-h-52 w-full object-contain"
                                 />
-                            </Field>
-                            <Field label="Vintyp *">
+                            ) : (
+                                <>
+                                    <Camera className="text-primary size-7" />
+                                    <span className="text-muted-foreground text-xs">Etikettfoto</span>
+                                </>
+                            )}
+                        </div>
+                        <label className="bg-primary text-primary-foreground relative flex min-h-11 items-center justify-center gap-2 overflow-hidden rounded-[13px] px-3 py-3 text-sm font-semibold">
+                            <Camera className="size-4" />
+                            Ta bild eller välj foto
+                            <input
+                                aria-label="Flaskbild"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                capture="environment"
+                                disabled={scanning}
+                                className="absolute inset-0 cursor-pointer opacity-0"
+                                onChange={(e) => {
+                                    form.setData('label', e.target.files?.[0] ?? null);
+                                    setScan(null);
+                                    setScanError('');
+                                }}
+                            />
+                        </label>
+                        <Button type="button" variant="secondary" disabled={!form.data.label || scanning} onClick={scanLabel}>
+                            {scanning ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
+                            {scanning ? 'Läser etiketten …' : 'Läs etiketten'}
+                        </Button>
+                        {step === 'start' && (
+                            <Button type="button" variant="secondary" disabled={scanning} onClick={() => setStep('details')}>
+                                Fyll i manuellt
+                            </Button>
+                        )}
+                        <p className="native-note">
+                            JPEG, PNG eller WebP, högst 10 MB. När du väljer Läs etiketten skickas bilden till OpenAI för analys. Bilden sparas privat
+                            och förbättras i bakgrunden när du sparar vinet.
+                        </p>
+                        {scanError && (
+                            <p role="alert" className="native-error">
+                                {scanError} Du kan försöka igen eller fylla i uppgifterna själv.
+                            </p>
+                        )}
+                        {scanning && (
+                            <div aria-label="Läser etiketten" className="bg-card animate-pulse space-y-3 rounded-[18px] p-4">
+                                <div className="bg-muted h-3 rounded-full" />
+                                <div className="bg-muted h-3 w-2/3 rounded-full" />
+                            </div>
+                        )}
+                    </section>
+                )}
+                {scan && step === 'details' && (
+                    <div role="status" className="native-note">
+                        <p className="font-semibold">Granska uppgifterna före sparning</p>
+                        <p className="mt-2">Okända uppgifter lämnas tomma. Bildanalysen kan göra fel.</p>
+                        {scan.warnings.map((w, i) => (
+                            <p className="mt-2" key={i}>
+                                {w}
+                            </p>
+                        ))}
+                        {Object.values(scan.confidence).includes('low') && (
+                            <p className="mt-2">Några uppgifter har låg säkerhet – kontrollera dem mot etiketten.</p>
+                        )}
+                    </div>
+                )}
+                {step === 'details' && (
+                    <>
+                        <div className="native-fields">
+                            {fields.slice(0, 3).map(([key, label, placeholder]) => (
+                                <Field key={key} label={label} error={form.errors[key]}>
+                                    <Input
+                                        required={key === 'name'}
+                                        type={key === 'vintage' ? 'number' : 'text'}
+                                        min={key === 'vintage' ? 1800 : undefined}
+                                        max={key === 'vintage' ? new Date().getFullYear() : undefined}
+                                        value={form.data[key]}
+                                        placeholder={placeholder}
+                                        onChange={(e) => form.setData(key, e.target.value)}
+                                    />
+                                </Field>
+                            ))}
+                            <Field label="Vintyp *" error={form.errors.type}>
                                 <Select required value={form.data.type} onChange={(e) => form.setData('type', e.target.value as WineType)}>
                                     <option value="">Välj vintyp</option>
                                     {Object.entries(wineTypes).map(([v, l]) => (
-                                        <option value={v} key={v}>
+                                        <option key={v} value={v}>
                                             {l}
                                         </option>
                                     ))}
                                 </Select>
                             </Field>
-                        </div>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <Field label="Land">
-                                <Input value={form.data.country} onChange={(e) => form.setData('country', e.target.value)} />
+                            {fields.slice(3).map(([key, label, placeholder]) => (
+                                <Field key={key} label={label} error={form.errors[key]}>
+                                    <Input value={form.data[key]} placeholder={placeholder} onChange={(e) => form.setData(key, e.target.value)} />
+                                </Field>
+                            ))}
+                            <Field label="Druvor, separerade med kommatecken" error={form.errors.grapes}>
+                                <Input value={grapes} onChange={(e) => setGrapes(e.target.value)} placeholder="Pinot noir, Chardonnay" />
                             </Field>
-                            <Field label="Region">
-                                <Input value={form.data.region} onChange={(e) => form.setData('region', e.target.value)} />
-                            </Field>
-                        </div>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <Field label="EAN" error={form.errors.ean}>
-                                <Input
-                                    inputMode="numeric"
-                                    maxLength={13}
-                                    value={form.data.ean}
-                                    onChange={(e) => form.setData('ean', e.target.value)}
-                                    placeholder="8 eller 13 siffror"
-                                />
-                            </Field>
-                            <Field label="Systembolagets artikelnummer" error={form.errors.systembolaget_number}>
-                                <Input
-                                    inputMode="numeric"
-                                    maxLength={20}
-                                    value={form.data.systembolaget_number}
-                                    onChange={(e) => form.setData('systembolaget_number', e.target.value)}
-                                    placeholder="Till exempel 7424201"
-                                />
-                            </Field>
-                        </div>
-                        <Field label="Druvor, separerade med kommatecken">
-                            <Input value={grapes} onChange={(e) => setGrapes(e.target.value)} placeholder="Pinot noir, Chardonnay" />
-                        </Field>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Field label="Alkoholhalt (%)">
+                            <Field label="Alkoholhalt (%)" error={form.errors.alcohol}>
                                 <Input
                                     type="number"
                                     min="0"
@@ -183,21 +252,31 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
                                     ))}
                                 </Select>
                             </Field>
+                            <Field label="Egna anteckningar" error={form.errors.notes}>
+                                <textarea
+                                    value={form.data.notes}
+                                    maxLength={5000}
+                                    onChange={(e) => form.setData('notes', e.target.value)}
+                                    placeholder="Smak, tillfälle eller något du vill komma ihåg…"
+                                />
+                            </Field>
                         </div>
-                        <Field label="Egna anteckningar">
-                            <textarea
-                                className="border-input bg-card min-h-28 rounded-md border p-3"
-                                value={form.data.notes}
-                                maxLength={5000}
-                                onChange={(e) => form.setData('notes', e.target.value)}
-                                placeholder="Smak, tillfälle eller något du vill komma ihåg …"
-                            />
-                        </Field>
-                    </section>
-                    {!wine && (
-                        <section className="border-border bg-card flex flex-col gap-5 rounded-xl border p-5 sm:p-7">
-                            <h2 className="font-serif text-2xl">Flaskor & placering</h2>
-                            <Field label="Antal flaskor">
+                        <Button type="button" variant="secondary" onClick={() => setShowPhoto(!showPhoto)}>
+                            {showPhoto ? 'Dölj etikettfoto' : 'Byt etikettfoto'}
+                        </Button>
+                        <Button disabled={form.processing || scanning}>
+                            {form.processing ? 'Sparar…' : wine ? 'Spara ändringar' : 'Fortsätt till antal & placering'}
+                        </Button>
+                    </>
+                )}
+                {step === 'stock' && (
+                    <>
+                        <button type="button" className="text-primary flex min-h-10 items-center text-[13px]" onClick={() => setStep('details')}>
+                            <ChevronLeft className="size-4" />
+                            Tillbaka till vinuppgifter
+                        </button>
+                        <div className="native-fields">
+                            <Field label="Antal flaskor" error={form.errors.quantity}>
                                 <Input
                                     type="number"
                                     required
@@ -205,7 +284,7 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
                                     max="100"
                                     value={form.data.quantity}
                                     onChange={(e) => {
-                                        const quantity = Number(e.target.value);
+                                        const quantity = Math.max(0, Number(e.target.value));
                                         form.setData((previous) => ({ ...previous, quantity, positions: previous.positions.slice(0, quantity) }));
                                     }}
                                 />
@@ -218,117 +297,50 @@ export default function WineForm({ wine, racks }: { wine: Wine | null; racks: Ra
                                     placeholder="Exempel: 249"
                                 />
                             </Field>
-                            {racks.length > 0 && (
-                                <>
-                                    <Field label="Välj hylla">
-                                        <Select value={rackId} onChange={(e) => setRackId(Number(e.target.value))}>
-                                            {racks.map((r) => (
-                                                <option key={r.id} value={r.id}>
-                                                    {r.name}
-                                                </option>
-                                            ))}
-                                        </Select>
-                                    </Field>
-                                    {rack && (
-                                        <RackGrid
-                                            rack={rack}
-                                            selected={form.data.positions}
-                                            onSelect={(slot, bottle) => {
-                                                if (bottle) return;
-                                                const exists = form.data.positions.some(
-                                                    (s) => s.wine_rack_id === slot.wine_rack_id && s.row === slot.row && s.column === slot.column,
-                                                );
-                                                if (exists)
-                                                    form.setData(
-                                                        'positions',
-                                                        form.data.positions.filter(
-                                                            (s) =>
-                                                                !(
-                                                                    s.wine_rack_id === slot.wine_rack_id &&
-                                                                    s.row === slot.row &&
-                                                                    s.column === slot.column
-                                                                ),
-                                                        ),
-                                                    );
-                                                else if (form.data.positions.length < form.data.quantity)
-                                                    form.setData('positions', [...form.data.positions, slot]);
-                                            }}
-                                        />
-                                    )}
-                                </>
-                            )}
-                            <p className="text-muted-foreground text-xs">
-                                {form.data.positions.length} platser valda · {form.data.quantity - form.data.positions.length} flaskor blir
-                                oplacerade.
-                            </p>
-                        </section>
-                    )}
-                    <div className="flex items-center gap-3">
-                        <Button disabled={form.processing || scanning}>
-                            {form.processing ? 'Sparar …' : wine ? 'Spara ändringar' : 'Spara vin och flaskor'}
-                        </Button>
-                        <Button asChild variant="ghost">
-                            <Link href={wine ? '/wines/' + wine.id : '/wines'}>Avbryt</Link>
-                        </Button>
-                    </div>
-                </div>
-                <aside className="order-first xl:order-last">
-                    <section className="border-border bg-card flex flex-col gap-4 rounded-xl border p-6">
-                        <Camera className="text-primary size-7" />
-                        <h2 className="font-serif text-2xl">Fånga flaskan</h2>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                            Ta ett foto av hela flaskan. Bakgrunden tas bort och bilden skärps och rätas upp automatiskt. Granska bilden före
-                            sparning.
-                        </p>
-                        <Input
-                            aria-label="Flaskbild"
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            capture="environment"
-                            disabled={scanning}
-                            onChange={(e) => {
-                                const file = e.target.files?.[0] ?? null;
-                                form.setData('label', file);
-                                setScan(null);
-                                setScanError('');
-                            }}
-                        />
-                        {(preview ?? wine?.label_url) && (
-                            <img
-                                src={preview ?? wine?.label_url ?? ''}
-                                alt="Förhandsvisning av flaskbilden"
-                                className="bg-muted max-h-64 w-full rounded-lg object-contain"
+                            <Field label="Välj hylla">
+                                <Select value={rackId} onChange={(e) => setRackId(Number(e.target.value))}>
+                                    <option value="0">Placera senare</option>
+                                    {racks.map((r) => (
+                                        <option value={r.id} key={r.id}>
+                                            {r.name}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                        </div>
+                        {rack && (
+                            <RackGrid
+                                rack={rack}
+                                compact
+                                selected={form.data.positions}
+                                onSelect={(slot, bottle) => {
+                                    if (bottle) return;
+                                    const exists = form.data.positions.some(
+                                        (s) => s.wine_rack_id === slot.wine_rack_id && s.row === slot.row && s.column === slot.column,
+                                    );
+                                    if (exists)
+                                        form.setData(
+                                            'positions',
+                                            form.data.positions.filter(
+                                                (s) => !(s.wine_rack_id === slot.wine_rack_id && s.row === slot.row && s.column === slot.column),
+                                            ),
+                                        );
+                                    else if (form.data.positions.length < form.data.quantity)
+                                        form.setData('positions', [...form.data.positions, slot]);
+                                }}
                             />
                         )}
-                        <Button type="button" variant="outline" disabled={!form.data.label || scanning} onClick={scanLabel}>
-                            {scanning ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
-                            {scanning ? 'Läser etiketten …' : 'Läs etiketten'}
-                        </Button>
-                        <p className="text-muted-foreground text-xs leading-relaxed">
-                            JPEG, PNG eller WebP, högst 10 MB. Läs etiketten skickar originalfotot till OpenAI för att fylla i vinuppgifterna. När du
-                            sparar lagras bilden privat och förbättras i bakgrunden. Originalbilden visas tills förbättringen är klar.
+                        <p className="text-muted-foreground text-xs" aria-live="polite">
+                            {form.data.positions.length} platser valda · {form.data.quantity - form.data.positions.length} flaskor blir oplacerade.
                         </p>
-                        {scanError && (
-                            <p role="alert" className="text-destructive text-sm">
-                                {scanError}
-                            </p>
-                        )}
-                        {scan && (
-                            <div role="status" className="bg-muted rounded-lg p-4 text-sm">
-                                <p className="font-medium">Granska uppgifterna före sparning</p>
-                                <p className="text-muted-foreground mt-2 text-xs">Okända uppgifter lämnas tomma. Bildanalysen kan göra fel.</p>
-                                {scan.warnings.map((warning, i) => (
-                                    <p className="mt-2 text-xs" key={i}>
-                                        {warning}
-                                    </p>
-                                ))}
-                                {Object.entries(scan.confidence).filter(([, level]) => level === 'low').length > 0 && (
-                                    <p className="mt-2 text-xs">Några uppgifter har låg säkerhet – kontrollera dem mot etiketten.</p>
-                                )}
-                            </div>
-                        )}
-                    </section>
-                </aside>
+                        <Button disabled={form.processing || scanning}>{form.processing ? 'Sparar…' : 'Spara vin och flaskor'}</Button>
+                    </>
+                )}
+                {step !== 'start' && (
+                    <Button asChild variant="ghost">
+                        <Link href={wine ? '/wines/' + wine.id : '/wines'}>Avbryt</Link>
+                    </Button>
+                )}
             </form>
         </CellarLayout>
     );

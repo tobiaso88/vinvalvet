@@ -11,7 +11,15 @@ interface FinancialState {
 
 const money = new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK' });
 
-export default function WineFinancials({ wine, availableBottleCount }: { wine: Wine; availableBottleCount: number }) {
+export default function WineFinancials({
+    wine,
+    availableBottleCount,
+    onValueChange,
+}: {
+    wine: Wine;
+    availableBottleCount: number;
+    onValueChange?: (value: number) => void;
+}) {
     const [financials, setFinancials] = useState<FinancialState>({
         estimated_value: wine.estimated_value,
         valuation: wine.valuation ?? null,
@@ -29,6 +37,8 @@ export default function WineFinancials({ wine, availableBottleCount }: { wine: W
                 const result = await jsonRequest<FinancialState>(`/wines/${wine.id}/valuation`, {}, 'GET');
                 setFinancials(result);
             } catch {
+                setError('Kunde inte uppdatera värderingen. Försök igen.');
+                setFinancials((current) => ({ ...current, valuation: current.valuation ? { ...current.valuation, status: 'failed' } : null }));
                 window.clearInterval(timer);
             }
         }, 2500);
@@ -63,6 +73,7 @@ export default function WineFinancials({ wine, availableBottleCount }: { wine: W
                 estimated_value: result.estimated_value,
                 valuation: current.valuation ? { ...current.valuation, reviewed_at: new Date().toISOString() } : null,
             }));
+            onValueChange?.(result.estimated_value);
             setMessage('Det uppskattade värdet har sparats på vinet.');
         } catch (exception) {
             setError(exception instanceof Error ? exception.message : 'Värdet kunde inte godkännas.');
@@ -74,27 +85,26 @@ export default function WineFinancials({ wine, availableBottleCount }: { wine: W
     const valuation = financials.valuation;
 
     return (
-        <section className="border-border bg-card space-y-4 rounded-xl border p-6">
-            <div className="flex flex-wrap items-start justify-between gap-3">
+        <section className="space-y-4">
+            <div className="flex flex-col gap-3">
                 <div>
-                    <h2 className="font-serif text-2xl">Marknadsvärde</h2>
                     <p className="text-muted-foreground mt-1 text-xs">Gemensamt värde per standardflaska om 750 ml.</p>
                 </div>
-                <Button variant="outline" size="sm" disabled={active || valuing} onClick={startValuation}>
+                <Button variant="secondary" className="w-full" disabled={active || valuing} onClick={startValuation}>
                     {(active || valuing) && <LoaderCircle className="animate-spin" />}
                     {valuation ? 'Uppdatera värdering' : 'Värdera vinet'}
                 </Button>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-                <p>
+            <div className="grid grid-cols-2 gap-[9px]">
+                <p className="bg-background rounded-[18px] p-[15px]">
                     <span className="text-muted-foreground block text-xs">Värde per flaska</span>
-                    <span className="text-lg font-medium">
+                    <span className="text-[27px] font-semibold tracking-[-1px]">
                         {financials.estimated_value === null ? 'Ej angivet' : money.format(financials.estimated_value)}
                     </span>
                 </p>
-                <p>
+                <p className="bg-background rounded-[18px] p-[15px]">
                     <span className="text-muted-foreground block text-xs">Totalt för {availableBottleCount} flaskor</span>
-                    <span className="text-lg font-medium">
+                    <span className="text-[27px] font-semibold tracking-[-1px]">
                         {financials.estimated_value === null ? 'Ej angivet' : money.format(financials.estimated_value * availableBottleCount)}
                     </span>
                 </p>
@@ -109,7 +119,7 @@ export default function WineFinancials({ wine, availableBottleCount }: { wine: W
                 <div className="border-border space-y-3 border-t pt-4">
                     <div>
                         <p className="text-muted-foreground text-xs">Senaste värderingsförslag</p>
-                        <p className="text-lg font-medium">
+                        <p className="text-[27px] font-semibold tracking-[-1px]">
                             {valuation.estimated_value === null ? 'Inget verifierbart värde hittades' : money.format(valuation.estimated_value)}
                         </p>
                         {valuation.valued_at && (
@@ -147,9 +157,9 @@ export default function WineFinancials({ wine, availableBottleCount }: { wine: W
                     )}
                 </div>
             )}
-            {message && <p className="text-sm text-emerald-700 dark:text-emerald-400">{message}</p>}
+            {message && <p className="native-success">{message}</p>}
             {error && (
-                <p role="alert" className="text-destructive text-sm">
+                <p role="alert" className="native-error">
                     {error}
                 </p>
             )}

@@ -19,7 +19,20 @@ class WineRackController extends Controller
 {
     public function index(Request $request): Response
     {
-        return Inertia::render('racks/index', ['racks' => $request->user()->racks()->withCount('bottles')->orderBy('name')->get()]);
+        return Inertia::render('racks/index', [
+            'racks' => $request->user()->racks()->withCount('bottles')->orderBy('name')->get(),
+            'unplacedCount' => Bottle::whereHas('wine', fn ($query) => $query->where('user_id', $request->user()->id))
+                ->where('status', BottleStatus::Available)->whereNull('wine_rack_id')->count(),
+        ]);
+    }
+
+    public function unplaced(Request $request): Response
+    {
+        return Inertia::render('racks/unplaced', [
+            'racks' => $request->user()->racks()->with('bottles.wine', 'bottles.rack')->orderBy('name')->get(),
+            'unplaced' => Bottle::whereHas('wine', fn ($query) => $query->where('user_id', $request->user()->id))
+                ->where('status', BottleStatus::Available)->whereNull('wine_rack_id')->with('wine', 'rack')->orderBy('id')->get(),
+        ]);
     }
 
     public function store(WineRackRequest $request): RedirectResponse
@@ -35,7 +48,7 @@ class WineRackController extends Controller
 
         return Inertia::render('racks/show', [
             'rack' => $rack->load('bottles.wine', 'bottles.rack'),
-            'racks' => $request->user()->racks()->with('bottles.rack')->orderBy('name')->get(),
+            'racks' => $request->user()->racks()->with('bottles.wine', 'bottles.rack')->orderBy('name')->get(),
             'unplaced' => Bottle::whereHas('wine', fn ($q) => $q->where('user_id', $request->user()->id))
                 ->where('status', BottleStatus::Available)->whereNull('wine_rack_id')->with('wine', 'rack')->orderBy('id')->get(),
         ]);

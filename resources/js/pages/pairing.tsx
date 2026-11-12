@@ -31,10 +31,10 @@ export default function Pairing() {
                         e.preventDefault();
                         void search();
                     }}
-                    className="border-border bg-card mb-8 rounded-xl border p-6 sm:p-8"
+                    className="mb-[22px] flex flex-col gap-3"
                 >
-                    <UtensilsCrossed className="text-primary mb-5 size-8" />
-                    <label htmlFor="dish" className="mb-3 block font-serif text-2xl">
+                    <UtensilsCrossed className="text-primary mb-2 size-[18px]" />
+                    <label htmlFor="dish" className="native-section-title">
                         Vad blir det till middag?
                     </label>
                     <textarea
@@ -44,7 +44,7 @@ export default function Pairing() {
                         maxLength={2000}
                         value={dish}
                         onChange={(e) => setDish(e.target.value)}
-                        className="border-input bg-background min-h-32 w-full rounded-lg border p-4 text-sm"
+                        className="bg-card placeholder:text-muted-foreground focus-visible:outline-primary min-h-32 w-full resize-y rounded-[18px] border-0 p-[15px] text-base leading-relaxed"
                         placeholder="Till exempel ugnsbakad lax med citron, dill och en krämig sås …"
                     />
                     <p className="text-muted-foreground mt-3 text-xs leading-relaxed">
@@ -56,47 +56,57 @@ export default function Pairing() {
                                 type="button"
                                 key={example}
                                 onClick={() => setDish(example)}
-                                className="border-border text-muted-foreground rounded-full border px-3 py-1.5 text-xs"
+                                className="bg-secondary text-secondary-foreground min-h-11 rounded-[13px] px-3 py-2 text-xs"
                             >
                                 {example}
                             </button>
                         ))}
                     </div>
-                    <Button className="mt-6" disabled={busy}>
+                    <Button className="mt-0 w-full" disabled={busy}>
                         {busy && <LoaderCircle className="size-4 animate-spin" />}
                         {busy ? 'Letar efter en bra matchning …' : 'Hitta passande vin'}
                     </Button>
                 </form>
+                {busy && (
+                    <div role="status" className="native-note mb-4">
+                        <LoaderCircle className="mb-2 size-5 animate-spin" />
+                        Letar bland flaskorna i din samling…
+                        <div className="bg-muted mt-3 h-3 w-full animate-pulse rounded-full" />
+                    </div>
+                )}
                 {error && (
-                    <p role="alert" className="bg-destructive/5 text-destructive rounded-lg p-4 text-sm">
+                    <p role="alert" className="native-error">
                         {error}
                     </p>
                 )}
                 {result && (
                     <section aria-live="polite">
-                        <h2 className="mb-3 font-serif text-2xl">
+                        <h2 className="mb-3 text-2xl font-semibold tracking-tight">
                             {result.recommendations.length ? 'Från din egen samling' : 'Ingen matchning den här gången'}
                         </h2>
-                        <p className="text-muted-foreground mb-5 text-sm">{result.message}</p>
+                        <p className="text-muted-foreground mb-4 text-[13px]">{result.message}</p>
                         <div className="flex flex-col gap-4">
                             {result.recommendations.map(({ wine, reason, rank }) => (
-                                <article key={wine.id} className="border-border bg-card rounded-xl border p-6">
+                                <article key={wine.id} className="native-group p-[15px]">
                                     <div className="flex items-start gap-4">
-                                        <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-full font-serif text-xl">
-                                            {rank}
+                                        <span className="bg-secondary text-primary inline-flex shrink-0 rounded-[7px] px-2 py-[5px] text-[11px] font-semibold">
+                                            Förslag {rank}
                                         </span>
                                         <div>
                                             <WineBadge wine={wine} />
-                                            <Link className="hover:text-primary mt-1 block font-serif text-2xl" href={'/wines/' + wine.id}>
+                                            <Link
+                                                className="hover:text-primary mt-1 block text-2xl font-semibold tracking-tight"
+                                                href={'/wines/' + wine.id}
+                                            >
                                                 {wine.name} · {wine.vintage ?? 'NV'}
                                             </Link>
-                                            <p className="text-muted-foreground mt-3 text-sm leading-relaxed">{reason}</p>
+                                            <p className="text-muted-foreground mt-3 text-[13px] leading-relaxed">{reason}</p>
                                             <div className="mt-4 flex flex-col gap-2">
                                                 {wine.bottles?.map((b) =>
                                                     b.wine_rack_id ? (
                                                         <Link
                                                             key={b.id}
-                                                            className="text-primary flex items-center gap-2 text-xs"
+                                                            className="bg-secondary text-primary flex min-h-11 items-center gap-2 rounded-[13px] px-[13px] py-3 text-[13px] font-semibold"
                                                             href={'/racks/' + b.wine_rack_id + '?bottle=' + b.id}
                                                         >
                                                             <MapPin className="size-3" />

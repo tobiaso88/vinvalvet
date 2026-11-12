@@ -18,7 +18,12 @@ export async function jsonRequest<T>(
             ...(!multipart ? { 'Content-Type': 'application/json' } : {}),
         },
         body: method === 'GET' ? undefined : multipart ? body : JSON.stringify(body),
+    }).catch(() => {
+        throw new Error('Kunde inte ansluta. Kontrollera din anslutning och försök igen.');
     });
+    if (response.status === 401 || response.status === 419) {
+        throw new Error('Sessionen har gått ut. Logga in igen för att fortsätta.');
+    }
     const data = await response.json().catch(() => ({ message: 'Svaret kunde inte läsas. Försök igen.' }));
     if (!response.ok) throw new Error(data.errors ? Object.values(data.errors).flat().join(' ') : (data.message ?? 'Något gick fel. Försök igen.'));
     return data as T;

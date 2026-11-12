@@ -8,7 +8,8 @@
 
 @theme {
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+        -apple-system, BlinkMacSystemFont, 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -77,74 +78,65 @@
 }
 
 :root {
-    --background: hsl(40, 27%, 97%);
-    --foreground: hsl(30, 13%, 19%);
-    --card: hsl(0, 0%, 100%);
-    --card-foreground: hsl(0, 0%, 3.9%);
-    --popover: hsl(0, 0%, 100%);
-    --popover-foreground: hsl(0, 0%, 3.9%);
-    --primary: hsl(346, 39%, 33%);
-    --primary-foreground: hsl(0, 0%, 98%);
-    --secondary: hsl(0, 0%, 96.1%);
-    --secondary-foreground: hsl(0, 0%, 9%);
-    --muted: hsl(36, 20%, 94%);
-    --muted-foreground: hsl(0, 0%, 45.1%);
-    --accent: hsl(0, 0%, 96.1%);
-    --accent-foreground: hsl(0, 0%, 9%);
-    --destructive: hsl(0, 84.2%, 60.2%);
-    --destructive-foreground: hsl(0, 0%, 98%);
-    --border: hsl(35, 18%, 88%);
-    --input: hsl(0, 0%, 89.8%);
-    --ring: hsl(346, 39%, 33%);
-    --chart-1: hsl(12, 76%, 61%);
-    --chart-2: hsl(173, 58%, 39%);
-    --chart-3: hsl(197, 37%, 24%);
-    --chart-4: hsl(43, 74%, 66%);
-    --chart-5: hsl(27, 87%, 67%);
-    --radius: 0.5rem;
-    --sidebar-background: hsl(0, 0%, 98%);
-    --sidebar-foreground: hsl(240, 5.3%, 30%);
-    --sidebar-primary: hsl(0, 0%, 10%);
-    --sidebar-primary-foreground: hsl(0, 0%, 98%);
-    --sidebar-accent: hsl(0, 0%, 94%);
-    --sidebar-accent-foreground: hsl(0, 0%, 30%);
-    --sidebar-border: hsl(0, 0%, 91%);
-    --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+    color-scheme: light;
+    --background: #f3f2f6;
+    --foreground: #28232b;
+    --card: #ffffff;
+    --card-foreground: #28232b;
+    --popover: #ffffff;
+    --popover-foreground: #28232b;
+    --primary: #86394f;
+    --primary-foreground: #ffffff;
+    --secondary: #f1e5eb;
+    --secondary-foreground: #86394f;
+    --muted: #e8e3eb;
+    --muted-foreground: #79717e;
+    --accent: #f1e5eb;
+    --accent-foreground: #86394f;
+    --destructive: #b93440;
+    --destructive-foreground: #ffffff;
+    --border: #e8e3eb;
+    --input: #e8e3eb;
+    --ring: #86394f;
+    --radius: 1.125rem;
+    --sidebar-background: #ffffff;
+    --sidebar-foreground: #79717e;
+    --sidebar-primary: #86394f;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f1e5eb;
+    --sidebar-accent-foreground: #86394f;
+    --sidebar-border: #e8e3eb;
+    --sidebar-ring: #86394f;
 }
-
 .dark {
-    --background: hsl(0, 0%, 3.9%);
-    --foreground: hsl(0, 0%, 98%);
-    --card: hsl(0, 0%, 3.9%);
-    --card-foreground: hsl(0, 0%, 98%);
-    --popover: hsl(0, 0%, 3.9%);
-    --popover-foreground: hsl(0, 0%, 98%);
-    --primary: hsl(0, 0%, 98%);
-    --primary-foreground: hsl(0, 0%, 9%);
-    --secondary: hsl(0, 0%, 14.9%);
-    --secondary-foreground: hsl(0, 0%, 98%);
-    --muted: hsl(0, 0%, 6.9%);
-    --muted-foreground: hsl(0, 0%, 63.9%);
-    --accent: hsl(0, 0%, 14.9%);
-    --accent-foreground: hsl(0, 0%, 98%);
-    --destructive: hsl(0, 84%, 60%);
-    --destructive-foreground: hsl(0, 0%, 98%);
-    --border: hsl(0, 0%, 14.9%);
-    --input: hsl(0, 0%, 14.9%);
-    --ring: hsl(0, 0%, 83.1%);
-    --chart-1: hsl(220, 70%, 50%);
-    --chart-2: hsl(160, 60%, 45%);
-    --chart-3: hsl(30, 80%, 55%);
-    --chart-4: hsl(280, 65%, 60%);
-    --chart-5: hsl(340, 75%, 55%);
-    --sidebar-background: hsl(0, 0%, 7%);
-    --sidebar-foreground: hsl(0, 0%, 80%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0, 0%, 100%);
-    --sidebar-accent: hsl(0, 0%, 15.9%);
-    --sidebar-accent-foreground: hsl(240, 4.8%, 95.9%);
-    --sidebar-border: hsl(0, 0%, 15.9%);
-    --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+    color-scheme: dark;
+    --background: #19181d;
+    --foreground: #f5eff5;
+    --card: #28262d;
+    --card-foreground: #f5eff5;
+    --popover: #28262d;
+    --popover-foreground: #f5eff5;
+    --primary: #e5a3b7;
+    --primary-foreground: #351421;
+    --secondary: #422c37;
+    --secondary-foreground: #e5a3b7;
+    --muted: #403946;
+    --muted-foreground: #b8afbf;
+    --accent: #422c37;
+    --accent-foreground: #e5a3b7;
+    --destructive: #ff9d9d;
+    --destructive-foreground: #351421;
+    --border: #403946;
+    --input: #403946;
+    --ring: #e5a3b7;
+    --sidebar-background: #28262d;
+    --sidebar-foreground: #b8afbf;
+    --sidebar-primary: #e5a3b7;
+    --sidebar-primary-foreground: #351421;
+    --sidebar-accent: #422c37;
+    --sidebar-accent-foreground: #e5a3b7;
+    --sidebar-border: #403946;
+    --sidebar-ring: #e5a3b7;
 }
 
 @layer base {
@@ -154,5 +146,115 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+@layer components {
+    .native-group {
+        @apply bg-card overflow-hidden rounded-[18px];
+    }
+    .native-group > .native-row + .native-row {
+        @apply border-border border-t;
+    }
+    .native-row {
+        @apply flex min-h-[52px] w-full items-center gap-2.5 px-[13px] py-3.5 text-left text-sm;
+    }
+    .native-section-title {
+        @apply mb-[11px] text-[17px] font-semibold tracking-[-.35px];
+    }
+    .native-field {
+        @apply bg-card flex min-w-0 flex-col gap-1.5 px-[13px] py-[11px];
+    }
+    .native-field > span:first-child {
+        @apply text-muted-foreground text-[11px] font-normal;
+    }
+    .native-fields {
+        @apply bg-card divide-border divide-y overflow-hidden rounded-[18px];
+    }
+    .native-field input,
+    .native-field select,
+    .native-field textarea {
+        @apply h-auto min-h-7 rounded-none border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0 focus-visible:outline-2 focus-visible:outline-offset-2;
+    }
+    .native-field textarea {
+        @apply min-h-24;
+    }
+    .native-note {
+        @apply bg-secondary text-secondary-foreground rounded-[13px] p-[13px] text-xs leading-relaxed;
+    }
+    .native-error {
+        @apply bg-destructive/10 text-destructive rounded-[13px] p-[13px] text-xs leading-relaxed;
+    }
+    .native-success {
+        @apply rounded-[13px] bg-emerald-600/10 p-[13px] text-xs leading-relaxed text-emerald-700 dark:text-emerald-300;
+    }
+    .native-bottle {
+        position: relative;
+        width: 44px;
+        height: 124px;
+        flex-shrink: 0;
+        margin: 28px 5px 0;
+        border-radius: 12px 12px 8px 8px;
+        background: linear-gradient(90deg, #24382c, #4a5946 45%, #213327);
+    }
+    .native-bottle::before {
+        content: '';
+        position: absolute;
+        top: -28px;
+        left: 14px;
+        width: 16px;
+        height: 34px;
+        border-radius: 3px 3px 0 0;
+        border-top: 14px solid #763649;
+        background: #28382a;
+    }
+    .native-bottle-label {
+        position: absolute;
+        inset: 39px 2px 20px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        padding: 4px;
+        background: #f6ecdb;
+        color: #3e2d2d;
+        text-align: center;
+        font:
+            10px/1.4 Georgia,
+            serif;
+        overflow-wrap: anywhere;
+    }
+    .native-search {
+        @apply text-muted-foreground bg-muted/60 flex items-center gap-2 rounded-xl px-3 py-2.5;
+    }
+    .native-search input {
+        @apply h-7 border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0;
+    }
+}
+@layer base {
+    body {
+        -webkit-font-smoothing: antialiased;
+    }
+    button,
+    a,
+    input,
+    select,
+    textarea {
+        -webkit-tap-highlight-color: transparent;
+    }
+    input[type='checkbox'] {
+        accent-color: var(--primary);
+    }
+    button:not(:disabled),
+    a {
+        touch-action: manipulation;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

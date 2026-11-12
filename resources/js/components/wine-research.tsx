@@ -1,9 +1,9 @@
-import { Errors } from '@/components/cellar';
+import { Errors, NativeRow } from '@/components/cellar';
 import { Button } from '@/components/ui/button';
 import { type Wine, wineBodies, type WineResearchField } from '@/types/wine';
 import { useForm, usePoll } from '@inertiajs/react';
 import { CheckCircle2, ExternalLink, FlaskConical, LoaderCircle, RefreshCw } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const fieldLabels: Record<WineResearchField, string> = {
     producer: 'Producent',
@@ -32,6 +32,7 @@ function isWineFieldEmpty(wine: Wine, field: WineResearchField): boolean {
 }
 
 export default function WineResearchCard({ wine }: { wine: Wine }) {
+    const [showSources, setShowSources] = useState(false);
     const research = wine.research;
     const active = research?.status === 'pending' || research?.status === 'processing';
     const startForm = useForm({});
@@ -71,144 +72,140 @@ export default function WineResearchCard({ wine }: { wine: Wine }) {
         );
     }
 
-    return (
-        <section className="border-border bg-card flex flex-col gap-5 rounded-xl border p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <FlaskConical className="text-primary size-5" />
-                        <h2 className="font-serif text-2xl">Vinresearch</h2>
-                    </div>
-                    <p className="text-muted-foreground mt-2 text-sm">Webbresearch med källor. Du bestämmer vilka tomma fält som fylls i.</p>
+    if (showSources) {
+        return (
+            <section className="flex flex-col gap-4">
+                <Button variant="ghost" className="w-fit" onClick={() => setShowSources(false)}>
+                    ← Tillbaka till research
+                </Button>
+                <h2 className="native-section-title">Betyg & källor</h2>
+                {(research?.ratings ?? []).map((rating) => (
+                    <a
+                        key={rating.provider + rating.url}
+                        href={rating.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-background rounded-[18px] p-[15px]"
+                    >
+                        <span className="text-primary text-xs font-semibold">
+                            {rating.provider} <ExternalLink className="inline size-3" />
+                        </span>
+                        <span className="mt-2 block text-[31px] font-semibold tracking-[-1px]">
+                            {rating.score} <span className="text-muted-foreground text-sm font-normal">/ {rating.scale}</span>
+                        </span>
+                        <span className="text-muted-foreground mt-2 block text-xs">
+                            {rating.review_count.toLocaleString('sv-SE')} omdömen{rating.vintage ? ' · Årgång ' + rating.vintage : ''}
+                        </span>
+                        <span className="text-muted-foreground mt-1 block text-xs">
+                            Kontrollerat {new Date(rating.observed_at).toLocaleDateString('sv-SE')}
+                        </span>
+                    </a>
+                ))}
+                <div className="native-group bg-background">
+                    {(research?.sources ?? []).map((source) => (
+                        <a key={source.url} className="native-row text-primary" href={source.url} target="_blank" rel="noopener noreferrer">
+                            <span className="min-w-0 flex-1 text-sm">{source.title}</span>
+                            <ExternalLink className="size-4" />
+                        </a>
+                    ))}
                 </div>
-                {!active && (
-                    <Button type="button" variant="outline" disabled={startForm.processing} onClick={runResearch}>
-                        {research ? <RefreshCw className="size-4" /> : <FlaskConical className="size-4" />}
-                        {research ? 'Gör om research' : 'Starta research'}
-                    </Button>
-                )}
-            </div>
+                {!research?.ratings?.length && <p className="native-note">Inga verifierbara externa betyg hittades för rätt vin och årgång.</p>}
+            </section>
+        );
+    }
+    return (
+        <section className="flex flex-col gap-4">
+            <p className="text-muted-foreground text-[13px] leading-relaxed">Webbresearch med källor. Du bestämmer vilka tomma fält som fylls i.</p>
+            {!active && (
+                <Button className="w-full" variant="secondary" disabled={startForm.processing} onClick={runResearch}>
+                    {research ? <RefreshCw /> : <FlaskConical />}
+                    {research ? 'Gör om research' : 'Sök uppgifter på webben'}
+                </Button>
+            )}
             <Errors errors={{ ...startForm.errors, ...applyForm.errors }} />
             {active && (
-                <div role="status" className="bg-muted/60 flex items-center gap-3 rounded-lg p-4 text-sm">
-                    <LoaderCircle className="text-primary size-5 animate-spin" />
-                    {research?.status === 'pending' ? 'Väntar på att researchen ska starta …' : 'Söker och kontrollerar källor …'}
-                </div>
+                <>
+                    <div role="status" className="native-note flex items-center gap-3">
+                        <LoaderCircle className="size-5 shrink-0 animate-spin" />
+                        {research?.status === 'pending' ? 'Väntar på att researchen ska starta …' : 'Söker och kontrollerar källor …'}
+                    </div>
+                    <div aria-hidden="true" className="bg-background animate-pulse space-y-3 rounded-[18px] p-4">
+                        <div className="bg-muted h-3 rounded-full" />
+                        <div className="bg-muted h-3 w-2/3 rounded-full" />
+                        <div className="bg-muted h-3 rounded-full" />
+                    </div>
+                </>
             )}
-            {!research && <p className="text-muted-foreground text-sm">Ingen research har gjorts för det här vinet ännu.</p>}
+            {!research && <p className="native-note">Ingen research har gjorts för det här vinet ännu.</p>}
             {research?.status === 'failed' && (
-                <p role="alert" className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
-                    {research.error_message}
+                <p role="alert" className="native-error">
+                    {research.error_message ?? 'Researchen kunde inte slutföras. Försök igen.'}
                 </p>
             )}
             {research?.status === 'completed' && (
                 <>
                     {research.researched_at && (
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-muted-foreground text-[11px]">
                             Senast kontrollerat{' '}
                             {new Date(research.researched_at).toLocaleString('sv-SE', { dateStyle: 'medium', timeStyle: 'short' })}
                         </p>
                     )}
-                    {availableFields.length > 0 ? (
+                    {availableFields.length ? (
                         <form
                             className="flex flex-col gap-4"
-                            onSubmit={(event) => {
-                                event.preventDefault();
-                                if (!research) return;
-                                applyForm.patch(`/wine-researches/${research.id}`, { preserveScroll: true });
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                applyForm.patch('/wine-researches/' + research.id, { preserveScroll: true });
                             }}
                         >
-                            <div className="divide-border divide-y rounded-lg border">
-                                {availableFields.map((field) => {
-                                    const value = research.suggestions!.fields[field] as string | number | string[];
-                                    const urls = research.suggestions!.source_urls[field] ?? [];
-                                    return (
-                                        <label key={field} className="flex cursor-pointer items-start gap-3 p-4">
-                                            <input
-                                                type="checkbox"
-                                                className="accent-primary mt-1 size-4"
-                                                checked={applyForm.data.fields.includes(field)}
-                                                onChange={() => toggleField(field)}
-                                            />
-                                            <span className="min-w-0 flex-1">
-                                                <span className="text-muted-foreground block text-xs">{fieldLabels[field]}</span>
-                                                <span className="mt-1 block text-sm font-medium">{displayValue(field, value)}</span>
-                                                <span className="text-muted-foreground mt-1 block text-xs">
-                                                    Säkerhet: {confidenceLabels[research.suggestions!.confidence[field] ?? 'unknown']}
-                                                </span>
-                                                {urls.length > 0 && (
-                                                    <span className="mt-2 flex flex-wrap gap-3">
-                                                        {urls.map((url) => (
-                                                            <a
-                                                                key={url}
-                                                                href={url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
-                                                            >
-                                                                Källa <ExternalLink className="size-3" />
-                                                            </a>
-                                                        ))}
-                                                    </span>
-                                                )}
+                            <h2 className="native-section-title">Föreslagna uppgifter</h2>
+                            <div className="native-group bg-background divide-border divide-y">
+                                {availableFields.map((field) => (
+                                    <label key={field} className="flex cursor-pointer items-start gap-2.5 p-[13px]">
+                                        <input
+                                            type="checkbox"
+                                            className="accent-primary mt-0.5 size-[18px] shrink-0"
+                                            checked={applyForm.data.fields.includes(field)}
+                                            onChange={() => toggleField(field)}
+                                        />
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block text-[13px] font-medium">
+                                                {fieldLabels[field]} ·{' '}
+                                                {displayValue(field, research.suggestions!.fields[field] as string | number | string[])}
                                             </span>
-                                        </label>
-                                    );
-                                })}
+                                            <span className="text-muted-foreground mt-1 block text-[11px]">
+                                                Säkerhet: {confidenceLabels[research.suggestions!.confidence[field] ?? 'unknown']}
+                                            </span>
+                                            {(research.suggestions!.source_urls[field] ?? []).map((url) => (
+                                                <a
+                                                    key={url}
+                                                    href={url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-primary mt-2 inline-flex min-h-8 items-center gap-1 text-xs"
+                                                >
+                                                    Källa <ExternalLink className="size-3" />
+                                                </a>
+                                            ))}
+                                        </span>
+                                    </label>
+                                ))}
                             </div>
-                            <Button disabled={applyForm.processing || applyForm.data.fields.length === 0}>
-                                <CheckCircle2 className="size-4" /> Godkänn valda uppgifter
+                            <p className="native-note">Fyller valda tomma fält. Granska uppgifter och källor innan du godkänner.</p>
+                            <Button disabled={applyForm.processing || !applyForm.data.fields.length}>
+                                <CheckCircle2 />
+                                {applyForm.processing ? 'Sparar…' : 'Godkänn valda uppgifter'}
                             </Button>
                         </form>
                     ) : (
-                        <p className="text-muted-foreground text-sm">Inga nya tomma fält kunde fyllas från säkra källor.</p>
+                        <p className="native-note">Inga nya tomma fält kunde fyllas från säkra källor.</p>
                     )}
-                    {(research.ratings?.length ?? 0) > 0 && (
-                        <div>
-                            <h3 className="text-sm font-medium">Verifierbara externa betyg</h3>
-                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                {research.ratings!.map((rating) => (
-                                    <a
-                                        key={`${rating.provider}-${rating.url}`}
-                                        href={rating.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="border-border hover:border-primary/40 rounded-lg border p-4"
-                                    >
-                                        <span className="text-sm font-medium">{rating.provider}</span>
-                                        <span className="mt-1 block font-serif text-2xl">
-                                            {rating.score} / {rating.scale}
-                                        </span>
-                                        <span className="text-muted-foreground mt-1 block text-xs">
-                                            {rating.review_count.toLocaleString('sv-SE')} omdömen{rating.vintage ? ` · ${rating.vintage}` : ''}
-                                        </span>
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    {(research.sources?.length ?? 0) > 0 && (
-                        <div>
-                            <h3 className="text-sm font-medium">Källor och recensioner</h3>
-                            <ul className="mt-3 flex flex-col gap-2">
-                                {research.sources!.map((source) => (
-                                    <li key={source.url}>
-                                        <a
-                                            href={source.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
-                                        >
-                                            {source.title} <ExternalLink className="size-3" />
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                    {(research.warnings?.length ?? 0) > 0 && (
-                        <div className="border-border bg-muted/40 rounded-lg border p-4 text-sm">
-                            {research.warnings!.map((warning) => (
+                    <div className="native-group bg-background">
+                        <NativeRow title="Externa betyg & källor" subtitle="Verifierad årgång och skala" onClick={() => setShowSources(true)} />
+                    </div>
+                    {!!research.warnings?.length && (
+                        <div className="native-note">
+                            {research.warnings.map((warning) => (
                                 <p key={warning}>{warning}</p>
                             ))}
                         </div>

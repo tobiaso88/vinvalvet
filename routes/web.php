@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::post('wine-research-batches', WineResearchBatchController::class)->middleware('throttle:wine-research-batches')->name('wine-research-batches.store');
     Route::patch('wine-researches/{wineResearch}', ApplyWineResearchController::class)->name('wine-researches.update');
     Route::resource('wines', WineController::class);
+    Route::get('racks/unplaced', [WineRackController::class, 'unplaced'])->name('racks.unplaced');
     Route::resource('racks', WineRackController::class)->except('create', 'edit');
     Route::post('bottles', [BottleController::class, 'store'])->name('bottles.store');
     Route::patch('bottles/{bottle}/financials', BottleFinancialController::class)->name('bottles.financials.update');

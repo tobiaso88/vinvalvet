@@ -5,6 +5,7 @@ import NavigationLoadingIndicator from '@/components/navigation-loading-indicato
 import RackGrid from '@/components/rack-grid';
 import WineFinancials from '@/components/wine-financials';
 import WineResearchCard from '@/components/wine-research';
+import { jsonRequest } from '@/lib/json-request';
 import Dashboard from '@/pages/dashboard';
 import Pairing from '@/pages/pairing';
 import WineForm from '@/pages/wines/form';
@@ -20,11 +21,14 @@ vi.mock('@inertiajs/react', async (importOriginal) => {
     return {
         ...actual,
         Head: () => null,
-        Link: ({ children, href, ...props }: { children: ReactNode; href: string }) => (
-            <a href={href} {...props}>
-                {children}
-            </a>
-        ),
+        Link: ({ children, href, prefetch: _prefetch, ...props }: { children: ReactNode; href: string; prefetch?: boolean | string }) => {
+            void _prefetch;
+            return (
+                <a href={href} {...props}>
+                    {children}
+                </a>
+            );
+        },
         usePage: () => ({ url: '/wines/create', props: { auth: { user: { name: 'Test' } }, flash: {} } }),
         usePoll: () => poll,
     };
@@ -78,6 +82,21 @@ describe('cellar interactions', () => {
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 
+    it('keeps the page available and shows a native error when a request loses its connection', () => {
+        render(<NavigationLoadingIndicator />);
+        const event = new CustomEvent('inertia:networkError', { cancelable: true, detail: { error: new Error('offline') } });
+        fireEvent(document, event);
+        expect(event.defaultPrevented).toBe(true);
+        expect(screen.getByRole('dialog')).toHaveTextContent('Kontrollera din anslutning och försök igen.');
+        fireEvent.click(screen.getByRole('button', { name: 'Fortsätt redigera', exact: true }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+    it('offers login when an Inertia request reports an expired session', () => {
+        render(<NavigationLoadingIndicator />);
+        fireEvent(document, new CustomEvent('inertia:httpException', { cancelable: true, detail: { response: { status: 419 } } }));
+        expect(screen.getByRole('dialog')).toHaveTextContent('Sessionen har gått ut.');
+        expect(screen.getByRole('link', { name: 'Logga in' })).toHaveAttribute('href', '/login');
+    });
     it('does not show loading feedback for background prefetches', () => {
         render(<NavigationLoadingIndicator />);
 
@@ -158,20 +177,25 @@ describe('cellar interactions', () => {
                 }}
             />,
         );
-        expect(screen.getByText('Ny producent')).toBeVisible();
+        expect(screen.getByText(/Producent · Ny producent/)).toBeVisible();
         expect(screen.getByRole('checkbox')).toBeChecked();
+        expect(screen.getByRole('button', { name: /Godkänn valda uppgifter/ })).toBeEnabled();
+        fireEvent.click(screen.getByRole('button', { name: /Externa betyg & källor/ }));
         expect(screen.getByRole('link', { name: /Vivino/ })).toHaveAttribute('rel', 'noopener noreferrer');
         expect(screen.getByRole('link', { name: /Producentens vinsida/ })).toHaveAttribute('target', '_blank');
-        expect(screen.getByRole('button', { name: /Godkänn valda uppgifter/ })).toBeEnabled();
     });
     it('keeps saving available and sends no enhancement request on image selection', () => {
         const mock = vi.spyOn(globalThis, 'fetch');
         render(<WineForm wine={null} racks={[]} />);
-        expect(screen.getByLabelText('Inköpspris per flaska')).toBeVisible();
         fireEvent.change(screen.getByLabelText('Flaskbild'), { target: { files: [new File(['photo'], 'photo.jpg', { type: 'image/jpeg' })] } });
         expect(mock).not.toHaveBeenCalled();
-        expect(screen.getByRole('button', { name: 'Spara vin och flaskor' })).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Läs etiketten' })).toBeEnabled();
+        fireEvent.click(screen.getByRole('button', { name: 'Fyll i manuellt' }));
+        fireEvent.change(screen.getByLabelText('Vinets namn *'), { target: { value: 'Mitt vin' } });
+        fireEvent.change(screen.getByLabelText('Vintyp *'), { target: { value: 'red' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Fortsätt till antal & placering' }));
+        expect(screen.getByLabelText('Inköpspris per flaska')).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Spara vin och flaskor' })).toBeEnabled();
         mock.mockRestore();
     });
     it('renders coordinates and distinguishes occupied empty and selected slots', () => {
@@ -185,8 +209,44 @@ describe('cellar interactions', () => {
     it('opens bottle controls and requires confirmation for consumption', () => {
         render(<BottleDialog bottle={rack.bottles![0]} racks={[rack]} onClose={vi.fn()} />);
         fireEvent.click(screen.getByRole('button', { name: 'Markera konsumerad' }));
-        expect(screen.getByText(/Markera flaskan som konsumerad/)).toBeVisible();
+        expect(screen.getByRole('heading', { name: 'Markera konsumerad?' })).toBeVisible();
         expect(screen.getByRole('button', { name: 'Bekräfta' })).toBeVisible();
+    });
+    it('shows location before bottle actions and keeps moving separate from the current location', () => {
+        render(<BottleDialog bottle={rack.bottles![0]} racks={[rack]} onClose={vi.fn()} />);
+        expect(screen.getByRole('link', { name: 'Visa vinet' })).toHaveAttribute('href', '/wines/1');
+        expect(screen.getByLabelText('Flaskans placering')).toBeVisible();
+        expect(screen.queryByLabelText('Inköpspris')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Flytta flaskan/ }));
+        expect(screen.getByRole('button', { name: 'Spara placering' })).toBeDisabled();
+        fireEvent.click(screen.getByRole('button', { name: 'B2 Ledig' }));
+        expect(screen.getByRole('button', { name: 'Spara placering' })).toBeEnabled();
+        expect(screen.getByText('Vald plats: B2')).toBeVisible();
+    });
+    it('opens placement immediately for an unplaced bottle', () => {
+        render(
+            <BottleDialog
+                bottle={{ ...rack.bottles![0], wine_rack_id: null, row: null, column: null, location: 'Oplacerad' }}
+                racks={[rack]}
+                onClose={vi.fn()}
+            />,
+        );
+        expect(screen.getByRole('heading', { name: 'Placera flaskan' })).toBeVisible();
+        expect(screen.getByLabelText('Välj hylla')).toHaveValue('1');
+        expect(screen.getByRole('button', { name: 'Spara placering' })).toBeDisabled();
+        fireEvent.click(screen.getByRole('button', { name: 'B2 Ledig' }));
+        expect(screen.getByRole('button', { name: 'Spara placering' })).toBeEnabled();
+    });
+    it('retains wine details when going back from placement', () => {
+        render(<WineForm wine={null} racks={[rack]} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Fyll i manuellt' }));
+        fireEvent.change(screen.getByLabelText('Vinets namn *'), { target: { value: 'Mitt nya vin' } });
+        fireEvent.change(screen.getByLabelText('Vintyp *'), { target: { value: 'white' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Fortsätt till antal & placering' }));
+        fireEvent.change(screen.getByLabelText('Antal flaskor'), { target: { value: '2' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Tillbaka till vinuppgifter' }));
+        expect(screen.getByLabelText('Vinets namn *')).toHaveValue('Mitt nya vin');
+        expect(screen.getByLabelText('Vintyp *')).toHaveValue('white');
     });
     it('applies a purchase price to all available bottles when selected', async () => {
         const fetchMock = vi
@@ -229,6 +289,16 @@ describe('cellar interactions', () => {
         expect(screen.getByText(/7 000/)).toBeVisible();
         expect(screen.getByRole('link', { name: /Handlare/ })).toHaveAttribute('rel', 'noopener noreferrer');
     });
+    it('explains an expired session on standalone requests', async () => {
+        const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ status: 419 } as Response);
+        await expect(jsonRequest('/bottles/1/financials', {}, 'PATCH')).rejects.toThrow('Sessionen har gått ut.');
+        fetchMock.mockRestore();
+    });
+    it('localizes network failures on standalone requests', async () => {
+        const fetchMock = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
+        await expect(jsonRequest('/wine-scans')).rejects.toThrow('Kunde inte ansluta.');
+        fetchMock.mockRestore();
+    });
     it('renders validation errors as an alert', () => {
         render(<Errors errors={{ position: 'Platsen är redan upptagen.' }} />);
         expect(screen.getByRole('alert')).toHaveTextContent('Platsen är redan upptagen.');
@@ -268,6 +338,7 @@ describe('cellar interactions', () => {
         await waitFor(() =>
             expect(screen.getAllByRole('alert').some((alert) => alert.textContent?.includes('Analysen tog för lång tid.'))).toBe(true),
         );
+        fireEvent.click(screen.getByRole('button', { name: 'Fyll i manuellt' }));
         fireEvent.change(screen.getByLabelText('Vinets namn *'), { target: { value: 'Manuellt vin' } });
         expect(screen.getByLabelText('Vinets namn *')).toHaveValue('Manuellt vin');
         mock.mockRestore();

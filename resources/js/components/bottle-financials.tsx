@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 const money = new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK' });
 
-export default function BottleFinancials({ bottle }: { bottle: Bottle }) {
+export default function BottleFinancials({ bottle, onSaved }: { bottle: Bottle; onSaved?: (price: number | null) => void }) {
     const [purchasePrice, setPurchasePrice] = useState(bottle.purchase_price?.toString() ?? '');
     const [savedPurchasePrice, setSavedPurchasePrice] = useState(bottle.purchase_price);
     const [applyToAll, setApplyToAll] = useState(false);
@@ -33,6 +33,7 @@ export default function BottleFinancials({ bottle }: { bottle: Bottle }) {
                 'PATCH',
             );
             setSavedPurchasePrice(result.purchase_price);
+            onSaved?.(result.purchase_price);
             setPurchasePrice(result.purchase_price?.toString() ?? '');
             setMessage(
                 applyToAll ? `Inköpspriset har sparats på ${result.updated_count} tillgängliga flaskor.` : 'Inköpspriset har sparats på flaskan.',
@@ -45,14 +46,14 @@ export default function BottleFinancials({ bottle }: { bottle: Bottle }) {
     }
 
     return (
-        <section className="border-border bg-muted/30 space-y-4 rounded-lg border p-4">
+        <section className="flex flex-col gap-4">
             <div>
                 <h3 className="font-medium">Inköpspris per flaska</h3>
                 <p className="text-muted-foreground mt-1 text-xs">Marknadsvärdet hanteras gemensamt på vinet.</p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                <label className="flex flex-col gap-2 text-sm font-medium">
-                    Inköpspris
+            <div className="flex flex-col gap-3">
+                <label className="native-field bg-background rounded-[18px]">
+                    <span>Inköpspris</span>
                     <Input
                         inputMode="decimal"
                         min="0"
@@ -66,7 +67,7 @@ export default function BottleFinancials({ bottle }: { bottle: Bottle }) {
                     {saving ? 'Sparar…' : 'Spara inköpspris'}
                 </Button>
             </div>
-            <label className="flex cursor-pointer items-start gap-3 text-sm">
+            <label className="bg-background flex cursor-pointer items-start gap-2.5 rounded-[18px] p-[13px] text-[13px]">
                 <Checkbox
                     aria-label="Använd samma pris på alla tillgängliga flaskor av detta vin"
                     checked={applyToAll}
@@ -87,9 +88,9 @@ export default function BottleFinancials({ bottle }: { bottle: Bottle }) {
                     {money.format(bottle.wine.estimated_value)}
                 </p>
             )}
-            {message && <p className="text-sm text-emerald-700 dark:text-emerald-400">{message}</p>}
+            {message && <p className="native-success">{message}</p>}
             {error && (
-                <p role="alert" className="text-destructive text-sm">
+                <p role="alert" className="native-error">
                     {error}
                 </p>
             )}

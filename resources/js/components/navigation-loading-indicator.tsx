@@ -1,8 +1,11 @@
-import { router } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Link, router } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export default function NavigationLoadingIndicator() {
+    const [failure, setFailure] = useState<'network' | 'session' | 'server' | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const activeRequests = useRef(0);
 
@@ -25,12 +28,63 @@ export default function NavigationLoadingIndicator() {
             setIsLoading(activeRequests.current > 0);
         });
 
+        const removeNetworkListener = router.on('networkError', (event) => {
+            event.preventDefault();
+            setIsLoading(false);
+            setFailure('network');
+        });
+        const removeHttpListener = router.on('httpException', (event) => {
+            const status = event.detail.response.status;
+            if (status === 401 || status === 419 || status >= 500) {
+                event.preventDefault();
+                setIsLoading(false);
+                setFailure(status === 401 || status === 419 ? 'session' : 'server');
+            }
+        });
         return () => {
+            removeNetworkListener();
+            removeHttpListener();
             removeStartListener();
             removeFinishListener();
         };
     }, []);
 
+    if (failure) {
+        return (
+            <Dialog
+                open
+                onOpenChange={(open) => {
+                    if (!open) setFailure(null);
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{failure === 'session' ? 'Logga in igen' : 'Kunde inte ansluta'}</DialogTitle>
+                        <DialogDescription>
+                            {failure === 'session'
+                                ? 'Sessionen har gått ut. Logga in igen för att fortsätta.'
+                                : 'Dina uppgifter finns kvar. Stäng meddelandet och försök igen.'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <p role="alert" className="native-error">
+                        {failure === 'network'
+                            ? 'Kontrollera din anslutning och försök igen.'
+                            : failure === 'server'
+                              ? 'Servern kunde inte behandla begäran just nu.'
+                              : 'Du behöver logga in igen.'}
+                    </p>
+                    {failure === 'session' && (
+                        <Button asChild>
+                            <Link href="/login">Logga in</Link>
+                        </Button>
+                    )}
+                    <Button variant="secondary" onClick={() => setFailure(null)}>
+                        Fortsätt redigera
+                    </Button>
+                </DialogContent>
+            </Dialog>
+        );
+    }
     if (!isLoading) {
         return null;
     }

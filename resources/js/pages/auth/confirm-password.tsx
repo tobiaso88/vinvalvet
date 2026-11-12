@@ -1,56 +1,37 @@
-// Components
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
-
-import InputError from '@/components/input-error';
+import { Errors, Field } from '@/components/cellar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
-
+import { Head, Link, useForm } from '@inertiajs/react';
 export default function ConfirmPassword() {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        password: '',
-    });
-
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-
-        post(route('password.confirm'), {
-            onFinish: () => reset('password'),
-        });
-    };
-
+    const form = useForm({ password: '' });
     return (
-        <AuthLayout title="Bekräfta ditt lösenord" description="Bekräfta ditt lösenord innan du fortsätter till den skyddade delen av appen.">
+        <AuthLayout title="Bekräfta att det är du" description="Ange ditt lösenord för att fortsätta.">
             <Head title="Bekräfta lösenord" />
-
-            <form onSubmit={submit}>
-                <div className="space-y-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Lösenord</Label>
+            <form
+                className="flex flex-col gap-3"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    form.post(route('password.confirm'), { onFinish: () => form.reset('password') });
+                }}
+            >
+                <Errors errors={form.errors} />
+                <div className="native-fields">
+                    <Field label="Lösenord">
                         <Input
-                            id="password"
                             type="password"
-                            name="password"
-                            placeholder="Lösenord"
+                            required
                             autoComplete="current-password"
-                            value={data.password}
                             autoFocus
-                            onChange={(e) => setData('password', e.target.value)}
+                            value={form.data.password}
+                            onChange={(e) => form.setData('password', e.target.value)}
                         />
-
-                        <InputError message={errors.password} />
-                    </div>
-
-                    <div className="flex items-center">
-                        <Button className="w-full" disabled={processing}>
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Bekräfta lösenord
-                        </Button>
-                    </div>
+                    </Field>
                 </div>
+                <Button disabled={form.processing}>{form.processing ? 'Bekräftar…' : 'Bekräfta lösenord'}</Button>
+                <Button asChild variant="secondary">
+                    <Link href="/settings">Tillbaka</Link>
+                </Button>
             </form>
         </AuthLayout>
     );

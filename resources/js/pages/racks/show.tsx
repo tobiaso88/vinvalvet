@@ -5,7 +5,7 @@ import RackGrid from '@/components/rack-grid';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import CellarLayout from '@/layouts/cellar-layout';
-import { type Bottle, type Rack, type RackSlot, typeColors, type WineType, wineTypes } from '@/types/wine';
+import { type Bottle, type Rack, type RackSlot } from '@/types/wine';
 import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
 export default function RackShow({ rack, racks, unplaced }: { rack: Rack; racks: Rack[]; unplaced: Bottle[] }) {
@@ -17,28 +17,16 @@ export default function RackShow({ rack, racks, unplaced }: { rack: Rack; racks:
     return (
         <CellarLayout
             title={rack.name}
-            description={rack.description ?? 'Välj en plats för att hantera flaskan som ligger där.'}
-            action={
-                <Button variant="outline" onClick={() => setEdit(true)}>
-                    Redigera hylla
-                </Button>
-            }
+            back={{ href: '/racks', label: 'Hyllor' }}
+            description={[rack.description, `${rack.bottles?.length ?? 0} av ${rack.rows * rack.columns} platser upptagna`]
+                .filter(Boolean)
+                .join(' · ')}
         >
-            <div className="text-muted-foreground mb-5 flex flex-wrap justify-between gap-3 text-sm">
-                <span>
-                    {rack.bottles?.length ?? 0} av {rack.rows * rack.columns} platser upptagna
-                </span>
-                <span>Rad A är överst · Kolumn 1 är längst till vänster</span>
-            </div>
             <RackGrid rack={rack} highlight={highlight} onSelect={(slot, bottle) => setSelection({ slot, bottle })} />
-            <div className="mt-5 flex flex-wrap gap-4">
-                {Object.entries(wineTypes).map(([type, label]) => (
-                    <span key={type} className="text-muted-foreground flex items-center gap-2 text-xs">
-                        <span className="size-2 rounded-full" style={{ background: typeColors[type as WineType] }} />
-                        {label}
-                    </span>
-                ))}
-            </div>
+            <p className="text-muted-foreground mt-3 text-[11px]">Färgfylld = upptagen · Sett framifrån</p>
+            <Button variant="secondary" className="mt-5 w-full" onClick={() => setEdit(true)}>
+                Redigera hylla
+            </Button>
             {selection && <BottleDialog {...selection} racks={racks} unplaced={unplaced} onClose={() => setSelection(null)} />}
             <Dialog open={edit} onOpenChange={setEdit}>
                 <DialogContent>
@@ -49,7 +37,8 @@ export default function RackShow({ rack, racks, unplaced }: { rack: Rack; racks:
                     <RackForm rack={rack} onSaved={() => setEdit(false)} />
                     <Errors errors={form.errors} />
                     {remove ? (
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-3">
+                            <p className="native-error">Endast tomma hyllor kan tas bort. Kontrollera att du har valt rätt hylla.</p>
                             <Button variant="destructive" disabled={form.processing} onClick={() => form.delete('/racks/' + rack.id)}>
                                 Bekräfta radering
                             </Button>
@@ -58,7 +47,7 @@ export default function RackShow({ rack, racks, unplaced }: { rack: Rack; racks:
                             </Button>
                         </div>
                     ) : (
-                        <Button variant="ghost" onClick={() => setRemove(true)}>
+                        <Button variant="ghost" className="text-destructive" onClick={() => setRemove(true)}>
                             Radera tom hylla
                         </Button>
                     )}
