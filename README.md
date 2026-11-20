@@ -4,7 +4,7 @@ En privat, svensk vinkällare med visuella hyllor, flaskhistorik, etikettläsnin
 
 ## Lokal installation
 
-Du behöver PHP 8.4 med PDO MySQL, GD och EXIF, Composer 2, Node.js 22 eller senare och MySQL 8. Laravel Boost ingår som utvecklingsberoende och installerades efter Laravel, före domän- och gränssnittsutvecklingen.
+Du behöver PHP 8.5 med PDO MySQL, GD och EXIF, Composer 2, Node.js 22 eller senare och MySQL 8. Laravel Boost ingår som utvecklingsberoende och installerades efter Laravel, före domän- och gränssnittsutvecklingen.
 
 1. Kör `composer install` och `npm ci` i projektmappen.
 2. Kopiera `.env.example` till `.env` om du inte redan har en miljöfil. Behåll befintlig `.env` vid uppdateringar.
@@ -33,10 +33,11 @@ Bilder lagras privat under `storage/app/private` och nås via en ägarskapskontr
 
 ## Tester och kodkvalitet
 
-Skapa en separat MySQL-databas `winefinder_test`. PHP-testerna använder detta namn via `phpunit.xml`, med anslutningsuppgifter från miljön. **Testdatabasen töms av testerna; använd den aldrig för ditt riktiga lager.**
+Skapa en separat MySQL-databas `winefinder_test`. PHP-testerna använder detta namn via `phpunit.xml`, med anslutningsuppgifter från miljön. **Testdatabasen töms av testerna; använd den aldrig för ditt riktiga lager.** GitHub Actions kör PHP-testerna och Pint med PHP 8.5.
 
 ```sh
-php artisan test --compact
+npm run build
+composer test
 npm run check
 npx eslint .
 npm run format:check
